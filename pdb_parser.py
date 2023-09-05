@@ -44,7 +44,6 @@ def parse_pdb_file(path_pdb_file, path_w_file):
 info = parse_pdb_file("7kh5.pdb", "extract_info.csv")
 
 
-
 # function for generated 92 test point
 # rappel calcul air sphère : 4 × π × R² = area 
 # donc le rayon :  racine carré (area / 4*pie) 
@@ -107,33 +106,43 @@ list_all_atomes_sondes = all_atomes_sondes(info)
 # retourne la liste des voisins d'un atome à partir de ses coordonnées 
 # et d'un  seuil (treeshold : distance en Angstrom) 
 
-def neigbords(x, y, z, info_pdb, threeshold):
+def neigbords(num_atome, info, threeshold):
 
+	info_pdb = info.copy()
+	
+	x = float(info_pdb[num_atome-1][3])
+	y = float(info_pdb[num_atome-1][4])
+	z = float(info_pdb[num_atome-1][5])
+	
+	del(info_pdb[num_atome-1])
 	list_neigbords = []
 	
-	for i in range(len(info)):
-		
-		x_max = abs(x - float(info[i][3]))
-		y_max = abs(y - float(info[i][4]))
-		z_max = abs(z - float(info[i][5])) 
-		
-		if x_max < threeshold and y_max < threeshold and z_max < threeshold :
-			list_neigbords.append(info[i])
+	for i in range(len(info_pdb)):
+			
+			x_nb = float(info_pdb[i][3])
+			y_nb = float(info_pdb[i][4])
+			z_nb = float(info_pdb[i][5])
+			
+			d = np.sqrt((x - x_nb)**2 + (y - y_nb)**2 + (z - z_nb)**2)
+			
+			if d < threeshold : 
+				list_neigbords.append(info_pdb[i])
+				print(info_pdb[i])
 	
 	return list_neigbords 
 	
+	
+list_nb = neigbords(1, info, 8)
 
 
 
-
-def all_neigbords(info , threeshold):
+def all_neigbords(info_pdb , threeshold):
 	list_all_neigbords = []
-	for i in range(len(info)):
-		list_all_neigbords.append(neigbords(float(info[i][3]), float(info[i][4]), float(info[i][5]), info, threeshold))
+	for i in range(len(info_pdb)):
+		list_all_neigbords.append(neigbords(i+1, info, threeshold))
+
 	return list_all_neigbords 
 	
-
-list_all_neigbords = all_neigbords(info, 2)
 
 
 
@@ -154,8 +163,7 @@ array_x_pdb = np.asarray(list_x_pdb)
 array_y_pdb = np.asarray(list_y_pdb)
 array_z_pdb = np.asarray(list_z_pdb)
 
-list_atomes_neigbords = neigbords(float(info[1][3]), float(info[1][4]), float(info[1][5]), info, 2)
-#print(list_atomes_neigbords)
+list_atomes_neigbords = neigbords(10, info, 5)
 
 list_x_neigbords = []
 list_y_neigbords = []
@@ -171,11 +179,12 @@ array_y_neigbords = np.asarray(list_y_neigbords)
 array_z_neigbords = np.asarray(list_z_neigbords)
 
 
-#plt.figure()
-#axes = plt.axes(projection="3d")
-#axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
-#axes.scatter(array_x_neigbords, array_y_neigbords, array_z_neigbords, s=100, color='red')
-#plt.show()
+plt.figure()
+axes = plt.axes(projection="3d")
+axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
+axes.scatter(float(info[10][3]), float(info[10][4]), float(info[10][5]), s= 300, color="green")
+axes.scatter(array_x_neigbords, array_y_neigbords, array_z_neigbords, s=200, color='red')
+plt.show()
 
 
 
@@ -190,31 +199,44 @@ array_z_neigbords = np.asarray(list_z_neigbords)
 def access_solvant(info, list_all_neigbords):
 
 	list_prct_solv_atomes = []
-	
+	acc_prot = 0 
+
 	for i in range(len(info)):
 	
-		print("\n")
-		print("coords atome")
 		a,b,c = test_point(float(info[i][3]), float(info[i][4]), float(info[i][5]), float(info[i][6]))
-		coords = [a,b,c]
-		print(coords)
-		print("\n")
 		
 		neigbords = list_all_neigbords[i]
-		print("\n")
+		nb_sondes = 0 
 		
 		for y in range(len(neigbords)):
 			
 			d,e,f = test_point(float(neigbords[y][3]), float(neigbords[y][4]), float(neigbords[y][5]), float(neigbords[y][6]))
-			coords_neigbords = [d,e,f]
-			print("coords_neigbords")
-			print(coords_neigbords)
-			print("\n")
 			
+			x_min = abs(np.subtract(a, d))
+			x_min[x_min <= 1.4] = -1
+			
+			y_min = abs(np.subtract(b, e))
+			y_min[y_min <= 1.4] = -1
+
+			z_min = abs(np.subtract(c, f))
+			z_min[z_min <= 1.4] = -1
+			
+			sum_coord = np.sum([x_min, y_min, z_min], axis=0)
+			nb_sondes_acc = np.count_nonzero(sum_coord == -3)
+			perct_acc = round((nb_sondes_acc * 100) / 92 , 2)
+			
+			list_prct_solv_atomes.append([info[i][1], info[i][2], perct_acc])
+			
+			acc_prot = acc_prot + perct_acc 
+	
+	
+	#print(acc_prot/len(info))
+	print(list_prct_solv_atomes)
+	return list_prct_solv_atomes
 			
 		
-
-access_solvant(info, list_all_neigbords)
+#list_all_neigbords = all_neigbords(info , 2)
+#access_solvant(info, list_all_neigbords)
 	
 	
 	
