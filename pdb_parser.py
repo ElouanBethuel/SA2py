@@ -50,22 +50,20 @@ info = parse_pdb_file("7kh5.pdb", "extract_info.csv")
 
 def test_point(x,y,z, radius):
 
-	#radius = np.sqrt(solvated_sphere_area / 4*np.pi)
-
 	theta = np.random.uniform(0, np.pi, 92)
 	phi = np.random.uniform(0, 2*np.pi, 92)
 	test_x = x + (radius * np.sin(theta) * np.cos(phi))
 	test_y = y + (radius * np.sin(theta) * np.sin(phi))
 	test_z = z + (radius * np.cos(theta))
+	
+	point = np.array([test_x, test_y, test_z]).T
 
-	return test_x, test_y, test_z
+	return point
 	
 	
 
 
 def test_point_graphic(x,y,z, radius):
-
-	#radius = np.sqrt(solvated_sphere_area / 4*np.pi)
 	
 	theta = np.random.uniform(0, np.pi, 92)
 	phi = np.random.uniform(0, 2*np.pi, 92)
@@ -88,17 +86,15 @@ def test_point_graphic(x,y,z, radius):
 
 
 def all_atomes_sondes(info_pdb):
-	list_all_points = []
-	for i in range(len(info_pdb)):
-		x,y,z = test_point(float(info[i][3]), float(info[i][4]), float(info[i][5]), float(info[i][6]))
-		point = [x,y,z]
-		list_all_points.append(point)
+
+	list_all_points = {}
+	
+	for atome in info_pdb:
+	
+		point = test_point(float(atome[3]), float(atome[4]), float(atome[5]), float(atome[6]))
+		list_all_points[atome[0]]  = point
 
 	return list_all_points
-
-
-list_all_atomes_sondes = all_atomes_sondes(info)
-#print(list_all_atomes_sondes)
 
 
 
@@ -127,7 +123,6 @@ def neigbords(num_atome, info, threeshold):
 			
 			if d < threeshold : 
 				list_neigbords.append(info_pdb[i])
-				print(info_pdb[i])
 	
 	return list_neigbords 
 	
@@ -163,7 +158,7 @@ array_x_pdb = np.asarray(list_x_pdb)
 array_y_pdb = np.asarray(list_y_pdb)
 array_z_pdb = np.asarray(list_z_pdb)
 
-list_atomes_neigbords = neigbords(10, info, 5)
+list_atomes_neigbords = neigbords(502, info, 5)
 
 list_x_neigbords = []
 list_y_neigbords = []
@@ -179,12 +174,12 @@ array_y_neigbords = np.asarray(list_y_neigbords)
 array_z_neigbords = np.asarray(list_z_neigbords)
 
 
-plt.figure()
-axes = plt.axes(projection="3d")
-axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
-axes.scatter(float(info[10][3]), float(info[10][4]), float(info[10][5]), s= 300, color="green")
-axes.scatter(array_x_neigbords, array_y_neigbords, array_z_neigbords, s=200, color='red')
-plt.show()
+#plt.figure()
+#axes = plt.axes(projection="3d")
+#axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
+#axes.scatter(float(info[502][3]), float(info[502][4]), float(info[502][5]), s= 300, color="green")
+#axes.scatter(array_x_neigbords, array_y_neigbords, array_z_neigbords, s=200, color='red')
+#plt.show()
 
 
 
@@ -196,51 +191,60 @@ plt.show()
 
 
 
-def access_solvant(info, list_all_neigbords):
+def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 
-	list_prct_solv_atomes = []
-	acc_prot = 0 
+	sum_acc_area = 0 
 
-	for i in range(len(info)):
+	for atome in info:
 	
-		a,b,c = test_point(float(info[i][3]), float(info[i][4]), float(info[i][5]), float(info[i][6]))
+		sondes = list_all_atomes_sondes[atome[0]]
 		
 		neigbords = list_all_neigbords[i]
 		nb_sondes = 0 
 		
-		for y in range(len(neigbords)):
+		for neigbord in neigbords:
 			
-			d,e,f = test_point(float(neigbords[y][3]), float(neigbords[y][4]), float(neigbords[y][5]), float(neigbords[y][6]))
+			x_n = float(neigbord[3])
+			y_n = float(neigbord[4])
+			z_n = float(neigbord[5])
 			
-			x_min = abs(np.subtract(a, d))
-			x_min[x_min <= 1.4] = -1
+			point_n = np.array([x_n, y_n, z_n])
 			
-			y_min = abs(np.subtract(b, e))
-			y_min[y_min <= 1.4] = -1
+			#calcules les distances euclidiennes entre l'atome voisin et les sondes de l'atome 
+			distances = np.linalg.norm(sondes - point_n, axis=1)
+			
 
-			z_min = abs(np.subtract(c, f))
-			z_min[z_min <= 1.4] = -1
+			points_inacessibles = distances < float(atome[6])
+			indices_points_inacessibles = np.where(points_inacessibles)[0]
+			sondes[indices_points_inacessibles] = -1
 			
-			sum_coord = np.sum([x_min, y_min, z_min], axis=0)
-			nb_sondes_acc = np.count_nonzero(sum_coord == -3)
-			perct_acc = round((nb_sondes_acc * 100) / 92 , 2)
 			
-			list_prct_solv_atomes.append([info[i][1], info[i][2], perct_acc])
-			
-			acc_prot = acc_prot + perct_acc 
-	
-	
-	#print(acc_prot/len(info))
-	print(list_prct_solv_atomes)
-	return list_prct_solv_atomes
-			
+		nb_sondes_inacessibles = np.count_nonzero(sondes == -1)/3  # car 3 coordonnées x,y,z et -1 pour chaque 
+		prct_acc_atome = 100 - ((nb_sondes_inacessibles / (np.size(sondes)/3)) * 100)
 		
-#list_all_neigbords = all_neigbords(info , 2)
-#access_solvant(info, list_all_neigbords)
+		area_acc_atome = (prct_acc_atome/100) * 4*np.pi*(float(atome[6])**2)
+		
+		sum_acc_area = sum_acc_area + area_acc_atome
+		
+		print(atome)
+		print("\n")
+		print(nb_sondes_inacessibles)
+		print("\n")
+		print(prct_acc_atome)
+		print("\n")
+		print(area_acc_atome)
+		print("\n")
 	
-	
-	
-	
+	print(sum_acc_area)
+			
+
+list_all_atomes_sondes = all_atomes_sondes(info)
+list_all_neigbord = all_neigbords(info , 100)
+access_solvant(info, list_all_neigbord, list_all_atomes_sondes)
+
+
+
+
 
 
 
