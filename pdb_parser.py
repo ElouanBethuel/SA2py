@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
 
 RADIUS_H2O = 1.4
-NB_SONDES = 92
+NB_SONDES = 400
 
 
 # Créez une instance de la classe PDBList
@@ -251,6 +251,9 @@ def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 		print(f"Le nombre de sondes accessibles au solvant est : {nb_sondes_acessibles} % \t")
 		print(f"Le pourcentage d'accessibilité de l'atome est : {round(prct_acc_atome,2)} % \t")
 		print(f"L'air d'accessibilité de l'atome est de : {round(area_acc_atome,2)} Angstrom carré \n")
+		
+		# ajout à info pour faire des stats 
+		atome.append(area_acc_atome)
 	
 	sum_acc_area = round(sum_acc_area, 2)
 	print(f"L'accessibilité au solvant de la protéine est de {sum_acc_area} Angstrom carré")
@@ -258,12 +261,94 @@ def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 
 
 
-info = parse_pdb_file("3i40.pdb")
+info = parse_pdb_file("7kh5.pdb")
 list_all_atomes_sondes = all_atomes_sondes(info)
-list_all_neigbord = all_neigbords(info , 10)
+list_all_neigbord = all_neigbords(info , 12)
 access_solvant(info, list_all_neigbord, list_all_atomes_sondes)
 
-plot_proteine(info, 5, 10)
+#plot_proteine(info, 5, 10)
+
+
+
+
+
+def stat_by_atome(info_pdb):
+	
+	sum_acc_c = 0
+	all_c = 0
+	
+	sum_acc_n = 0
+	all_n = 0
+	
+	sum_acc_o = 0
+	all_o = 0
+	
+	sum_acc_s = 0 
+	all_s = 0 
+	
+	for atome in info_pdb:
+		
+		if atome[1].find("C") == -1:
+			
+			sum_acc_c = sum_acc_c + atome[7]
+			all_c = all_c + 1 
+
+		if atome[1].find("N") == -1:
+			sum_acc_n = sum_acc_n + atome[7]
+			all_n = all_n + 1 
+		
+		if atome[1].find("O") == -1:
+			sum_acc_o = sum_acc_o + atome[7]
+			all_o = all_o + 1 
+		
+		if atome[1].find("S") == -1:
+			sum_acc_s = sum_acc_s + atome[7]
+			all_s = all_s + 1 
+			
+	
+	stat_c =sum_acc_c / all_c 
+	stat_n =sum_acc_n / all_n
+	stat_o =sum_acc_o / all_o
+	stat_s =sum_acc_s / all_s
+	
+	return [stat_c, stat_n, stat_o, stat_s]
+
+
+
+
+
+#stat_atome = stat_by_atome(info)
+#fig = plt.figure()
+#atomes = ["C","N","O","S"]
+#width = 0.5
+#plt.bar(atomes, stat_atome, width, color='b' )
+#plt.savefig('SimpleBar.png')
+#plt.show()
+
+
+
+
+
+acides_amines = {"ALA" : [0,0], "ARG" : [0,0], "ASN" : [0,0], "ASP" : [0,0], 
+				 "CYS" : [0,0], "GLY" : [0,0], "HIS" : [0,0], "ILE" : [0,0], 
+				 "LEU" : [0,0], "LYS" : [0,0], "MET" : [0,0], "PHE" : [0,0], 
+				 "PRO" : [0,0], "SER" : [0,0], "THR" : [0,0], "TRP" : [0,0], 
+				 "TYR" : [0,0], "VAL" : [0,0]}
+				 
+
+def stat_by_residus(info):
+
+	for atome in info:
+		
+		if atome[2] in acides_amines :
+			acides_amines[atome[2]] = [atome[7]][1]
+
+
+#stat_by_residus(info)
+#print(acides_amines)
+		
+
+
 
 
 
