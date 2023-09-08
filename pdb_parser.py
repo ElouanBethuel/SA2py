@@ -2,17 +2,26 @@
 import numpy as np
 import random
 import copy
+import Bio
+from Bio.PDB import PDBList
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
 
-
 RADIUS_H2O = 1.4
+
+
+# Créez une instance de la classe PDBList
+#pdbl = PDBList()
+# Spécifiez le code PDB du fichier que vous souhaitez télécharger
+#pdb_code = "1ATP" 
+# Utilisez la méthode get_pdb_file pour télécharger le fichier PDB
+#pdbl.retrieve_pdb_file(pdb_code, file_format="pdb")
 
 
 
 # script to parse PDB files and add Radius and area of solvated sphere 
 
-def parse_pdb_file(path_pdb_file, path_w_file):
+def parse_pdb_file(path_pdb_file):
 
 	info = []
 
@@ -50,10 +59,11 @@ def parse_pdb_file(path_pdb_file, path_w_file):
 
 def test_point(x,y,z, radius):
 
-	r = radius + 1.4
+	r = radius + RADIUS_H2O
 
 	theta = np.random.uniform(0, np.pi, 92)
 	phi = np.random.uniform(0, 2*np.pi, 92)
+	
 	test_x = x + r * np.sin(theta) * np.cos(phi)
 	test_y = y + r * np.sin(theta) * np.sin(phi)
 	test_z = z + r * np.cos(theta)
@@ -67,10 +77,11 @@ def test_point(x,y,z, radius):
 
 def test_point_graphic(x,y,z, radius):
 	
+	r = radius + RADIUS_H2O
+	
 	theta = np.random.uniform(0, np.pi, 92)
 	phi = np.random.uniform(0, 2*np.pi, 92)
-	r = radius + 1.4 
-	
+
 	test_x = x + r * np.sin(theta) * np.cos(phi)
 	test_y = y + r * np.sin(theta) * np.sin(phi)
 	test_z = z + r * np.cos(theta)
@@ -78,15 +89,16 @@ def test_point_graphic(x,y,z, radius):
 	plt.figure()
 	axes = plt.axes(projection="3d")
 	
-	# affiche coordonnées de l'atome
+	# affiche en rouge l'atome 
 	axes.scatter(x, y, z, color='red')
 	
-	# On affiche notre nuage de points en 3D
+	# affiche en bleu les sondes autour de l'atome
 	axes.scatter(test_x, test_y, test_z)
 	
 	plt.show()
-	return test_x, test_y, test_z
-
+	point = np.array([test_x, test_y, test_z]).T
+	
+	return points
 
 
 
@@ -119,16 +131,16 @@ def neigbords(num_atome, pdb, threeshold):
 	del(info_pdb[num_atome-1])
 	list_neigbords = []
 	
-	for i in range(len(info_pdb)):
+	for atome in info_pdb:
 			
-			x_nb = float(info_pdb[i][3])
-			y_nb = float(info_pdb[i][4])
-			z_nb = float(info_pdb[i][5])
+			x_nb = float(atome[3])
+			y_nb = float(atome[4])
+			z_nb = float(atome[5])
 			
 			d = np.sqrt((x - x_nb)**2 + (y - y_nb)**2 + (z - z_nb)**2)
 			
 			if d < threeshold : 
-				list_neigbords.append(info_pdb[i])
+				list_neigbords.append(atome)
 	
 	return list_neigbords 
 	
@@ -159,10 +171,11 @@ def plot_proteine(info, num_atome, distance):
 	list_y_pdb = []
 	list_z_pdb = []
 
-	for i in range(len(info)):
-		list_x_pdb.append(float(info[i][3]))
-		list_y_pdb.append(float(info[i][4]))
-		list_z_pdb.append(float(info[i][5]))
+	for atome in info:
+	
+		list_x_pdb.append(float(atome[3]))
+		list_y_pdb.append(float(atome[4]))
+		list_z_pdb.append(float(atome[5]))
 
 	array_x_pdb = np.asarray(list_x_pdb)
 	array_y_pdb = np.asarray(list_y_pdb)
@@ -174,15 +187,15 @@ def plot_proteine(info, num_atome, distance):
 	list_y_neigbords = []
 	list_z_neigbords = []
 
-	for i in range(len(list_atomes_neigbords)):
-		list_x_neigbords.append(float(list_atomes_neigbords[i][3]))
-		list_y_neigbords.append(float(list_atomes_neigbords[i][4]))
-		list_z_neigbords.append(float(list_atomes_neigbords[i][5]))
+	for atome in list_atomes_neigbords:
+	
+		list_x_neigbords.append(float(atome[3]))
+		list_y_neigbords.append(float(atome[4]))
+		list_z_neigbords.append(float(atome[5]))
 		
 	array_x_neigbords = np.asarray(list_x_neigbords)
 	array_y_neigbords = np.asarray(list_y_neigbords)
 	array_z_neigbords = np.asarray(list_z_neigbords)
-
 
 	plt.figure()
 	axes = plt.axes(projection="3d")
@@ -194,12 +207,8 @@ def plot_proteine(info, num_atome, distance):
 
 
 
-
-
 # fonction pour déterminer le pourcentage de sondes accessibles au solvant 
 # pour chaque atome de la protéine 
-
-
 
 def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 
@@ -223,28 +232,24 @@ def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 			
 			point_n = np.array([x_n, y_n, z_n])
 			
-			#calcules les distances euclidiennes entre l'atome voisin et les sondes de l'atome 
+			# calcule les distances euclidiennes entre l'atome voisin et les sondes de l'atome 
 			distances = np.linalg.norm(point_n -sondes, axis=1)
 
 			points_inacessibles = distances <= 1.4 + float(atome[6])
 			indices_points_inacessibles = np.where(points_inacessibles)[0]
 			sondes_inacessibles[indices_points_inacessibles] = -1
 			
-
-		nb_sondes_acessibles = (np.size(sondes)/3) - np.count_nonzero(sondes_inacessibles == -1)/3  # car 3 coordonnées x,y,z et -1 pour chaque 
+		# divise par 3 car 3 coordonnées x,y,z  pour chaque sonde 
+		nb_sondes_acessibles = (np.size(sondes)/3) - np.count_nonzero(sondes_inacessibles == -1)/3
 		prct_acc_atome = ((nb_sondes_acessibles / (np.size(sondes)/3)) * 100)
 		
 		area_acc_atome = (prct_acc_atome/100) * 4*np.pi*((1.4+float(atome[6]))**2)
 		sum_acc_area = sum_acc_area + area_acc_atome
 		
-		print(atome)
-		print("\n")
-		print(f"Le nombre de sondes accessibles au solvant est : {nb_sondes_acessibles}")
-		print("\n")
-		print(f"Le pourcentage d'accessibilité de l'atome est : {prct_acc_atome}")
-		print("\n")
-		print(f"L'air d'accessibilité de l'atome est de : {area_acc_atome} Angstrom carré")
-		print("\n")
+		print(f"{atome} \t")
+		print(f"Le nombre de sondes accessibles au solvant est : {nb_sondes_acessibles} % \t")
+		print(f"Le pourcentage d'accessibilité de l'atome est : {round(prct_acc_atome,2)} % \t")
+		print(f"L'air d'accessibilité de l'atome est de : {round(area_acc_atome,2)} Angstrom carré \n")
 	
 	sum_acc_area = round(sum_acc_area, 2)
 	print(f"L'accessibilité au solvant de la protéine est de {sum_acc_area} Angstrom carré")
@@ -252,13 +257,12 @@ def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 
 
 
-info = parse_pdb_file("1us7.pdb", "extract_info.csv")
+info = parse_pdb_file("3i40.pdb")
 list_all_atomes_sondes = all_atomes_sondes(info)
 list_all_neigbord = all_neigbords(info , 10)
 access_solvant(info, list_all_neigbord, list_all_atomes_sondes)
 
 plot_proteine(info, 5, 10)
-
 
 
 
