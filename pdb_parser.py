@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
 
 RADIUS_H2O = 1.4
+NB_SONDES = 92
 
 
 # Créez une instance de la classe PDBList
@@ -55,14 +56,14 @@ def parse_pdb_file(path_pdb_file):
 
 
 
-# function for generated 92 test point
+# function for generated 92 sondes
 
 def test_point(x,y,z, radius):
 
 	r = radius + RADIUS_H2O
 
-	theta = np.random.uniform(0, np.pi, 92)
-	phi = np.random.uniform(0, 2*np.pi, 92)
+	theta = np.random.uniform(0, np.pi, NB_SONDES)
+	phi = np.random.uniform(0, 2*np.pi, NB_SONDES)
 	
 	test_x = x + r * np.sin(theta) * np.cos(phi)
 	test_y = y + r * np.sin(theta) * np.sin(phi)
@@ -79,8 +80,8 @@ def test_point_graphic(x,y,z, radius):
 	
 	r = radius + RADIUS_H2O
 	
-	theta = np.random.uniform(0, np.pi, 92)
-	phi = np.random.uniform(0, 2*np.pi, 92)
+	theta = np.random.uniform(0, np.pi, NB_SONDES)
+	phi = np.random.uniform(0, 2*np.pi, NB_SONDES)
 
 	test_x = x + r * np.sin(theta) * np.cos(phi)
 	test_y = y + r * np.sin(theta) * np.sin(phi)
