@@ -8,32 +8,35 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
 
 RADIUS_H2O = 1.4
-NB_SONDES = 400
+NB_SONDES = 1000
 
 
 # Créez une instance de la classe PDBList
-#pdbl = PDBList()
+# pdbl = PDBList()
 # Spécifiez le code PDB du fichier que vous souhaitez télécharger
-#pdb_code = "1ATP" 
+# pdb_code = "1ATP"
 # Utilisez la méthode get_pdb_file pour télécharger le fichier PDB
-#pdbl.retrieve_pdb_file(pdb_code, file_format="pdb")
+# pdbl.retrieve_pdb_file(pdb_code, file_format="pdb")
 
 
-
-# script to parse PDB files and add Radius and area of solvated sphere 
+# Script to parse PDB files and add Radius and area of solvated sphere
 
 def parse_pdb_file(path_pdb_file):
 
 	info = []
 
-	with open(path_pdb_file , "r") as pdb_file :
+	with open(path_pdb_file, "r") as pdb_file:
 		
 		for line in pdb_file:
-			if line.startswith("ATOM") == True :
-				split_line = line.split()
+		
+			if line.startswith("ATOM") == True:
+			
+				splt_line = line.split()
 				
-				if split_line[1] != "H":
-					new_line = [split_line[1], split_line[2], split_line[3], split_line[6], split_line[7], split_line[8]]
+				if splt_line[1] != "H":
+				
+					new_line = [splt_line[1], splt_line[2], splt_line[3], 
+								splt_line[6], splt_line[7], splt_line[8]]
 					
 					# add Van der Wadd radius
 					
@@ -58,7 +61,7 @@ def parse_pdb_file(path_pdb_file):
 
 # function for generated 92 sondes
 
-def test_point(x,y,z, radius):
+def test_point(x, y, z, radius):
 
 	r = radius + RADIUS_H2O
 
@@ -76,9 +79,13 @@ def test_point(x,y,z, radius):
 	
 
 
-def test_point_graphic(x,y,z, radius):
+def test_point_graphic(info_pdb, num_atom):
+
+	x = float(info_pdb[num_atom][3])
+	y = float(info_pdb[num_atom][4])
+	z = float(info_pdb[num_atom][5])
 	
-	r = radius + RADIUS_H2O
+	r = float(info_pdb[num_atom][6]) + RADIUS_H2O
 	
 	theta = np.random.uniform(0, np.pi, NB_SONDES)
 	phi = np.random.uniform(0, 2*np.pi, NB_SONDES)
@@ -97,7 +104,7 @@ def test_point_graphic(x,y,z, radius):
 	axes.scatter(test_x, test_y, test_z)
 	
 	plt.show()
-	point = np.array([test_x, test_y, test_z]).T
+	points = np.array([test_x, test_y, test_z]).T
 	
 	return points
 
@@ -118,7 +125,7 @@ def all_atomes_sondes(info_pdb):
 
 
 
-# retourne la liste des voisins d'un atome à partir de ses coordonnées 
+# Retourne la liste des voisins d'un atome à partir de ses coordonnées 
 # et d'un  seuil (treeshold : distance en Angstrom) 
 
 def neigbords(num_atome, pdb, threeshold):
@@ -140,7 +147,7 @@ def neigbords(num_atome, pdb, threeshold):
 			
 			d = np.sqrt((x - x_nb)**2 + (y - y_nb)**2 + (z - z_nb)**2)
 			
-			if d < threeshold : 
+			if d < threeshold: 
 				list_neigbords.append(atome)
 	
 	return list_neigbords 
@@ -149,7 +156,7 @@ def neigbords(num_atome, pdb, threeshold):
 
 
 
-def all_neigbords(info_pdb , threeshold):
+def all_neigbords(info_pdb, threeshold):
 
 	list_all_neigbords = []
 	
@@ -160,10 +167,6 @@ def all_neigbords(info_pdb , threeshold):
 	
 
 
-
-
-# CODE POUR PLOTER TT LES POINTS DE LA PROTEINE EN BLEUE
-# ET LES VOISINS DE L'ATOME SELECTIONNE EN ROUGE 
 
 
 def plot_proteine(info, num_atome, distance):
@@ -256,100 +259,81 @@ def access_solvant(info, list_all_neigbords, list_all_atomes_sondes):
 		atome.append(area_acc_atome)
 	
 	sum_acc_area = round(sum_acc_area, 2)
-	print(f"L'accessibilité au solvant de la protéine est de {sum_acc_area} Angstrom carré")
+	print(f"L'accessibilité au solvant de la protéine est de {sum_acc_area} Angstrom carré\n")
 			
 
 
 
-info = parse_pdb_file("7kh5.pdb")
-list_all_atomes_sondes = all_atomes_sondes(info)
-list_all_neigbord = all_neigbords(info , 12)
-access_solvant(info, list_all_neigbord, list_all_atomes_sondes)
-
-#plot_proteine(info, 5, 10)
-
-
-
-
-
-def stat_by_atome(info_pdb):
+def stat_by_atom(info_pdb):
 	
-	sum_acc_c = 0
-	all_c = 0
-	
-	sum_acc_n = 0
-	all_n = 0
-	
-	sum_acc_o = 0
-	all_o = 0
-	
-	sum_acc_s = 0 
-	all_s = 0 
+	dict_atoms = {"C" : 0, "N" : 0, "O" : 0, "S" : 0}
 	
 	for atome in info_pdb:
 		
-		if atome[1].find("C") == -1:
-			
-			sum_acc_c = sum_acc_c + atome[7]
-			all_c = all_c + 1 
-
-		if atome[1].find("N") == -1:
-			sum_acc_n = sum_acc_n + atome[7]
-			all_n = all_n + 1 
+		a = atome[1][0]
 		
-		if atome[1].find("O") == -1:
-			sum_acc_o = sum_acc_o + atome[7]
-			all_o = all_o + 1 
-		
-		if atome[1].find("S") == -1:
-			sum_acc_s = sum_acc_s + atome[7]
-			all_s = all_s + 1 
+		if a in dict_atoms: 
 			
+			dict_atoms[a] = dict_atoms[a] + float(atome[7])
 	
-	stat_c =sum_acc_c / all_c 
-	stat_n =sum_acc_n / all_n
-	stat_o =sum_acc_o / all_o
-	stat_s =sum_acc_s / all_s
+	list_atoms = list(dict_atoms.keys())
+	list_values = list(dict_atoms.values())
 	
-	return [stat_c, stat_n, stat_o, stat_s]
+	fig = plt.figure()
+	width = 0.5
+	plt.bar(list_atoms, list_values, width, color='b')
+	# plt.savefig('Barplot_solvant_access_area_by_atom.png')
+	plt.show()
+	
+	return dict_atoms
 
 
 
-
-
-#stat_atome = stat_by_atome(info)
-#fig = plt.figure()
-#atomes = ["C","N","O","S"]
-#width = 0.5
-#plt.bar(atomes, stat_atome, width, color='b' )
-#plt.savefig('SimpleBar.png')
-#plt.show()
-
-
-
-
-
-acides_amines = {"ALA" : [0,0], "ARG" : [0,0], "ASN" : [0,0], "ASP" : [0,0], 
-				 "CYS" : [0,0], "GLY" : [0,0], "HIS" : [0,0], "ILE" : [0,0], 
-				 "LEU" : [0,0], "LYS" : [0,0], "MET" : [0,0], "PHE" : [0,0], 
-				 "PRO" : [0,0], "SER" : [0,0], "THR" : [0,0], "TRP" : [0,0], 
-				 "TYR" : [0,0], "VAL" : [0,0]}
-				 
 
 def stat_by_residus(info):
-
+	
+	dict_aa = {"ALA": 0, "ARG": 0, "ASN": 0, "ASP": 0, 
+			   "CYS": 0, "GLY": 0, "HIS": 0, "ILE": 0, 
+			   "LEU": 0, "LYS": 0, "MET": 0, "PHE": 0, 
+			   "PRO": 0, "SER": 0, "THR": 0, "TRP": 0, 
+			   "TYR": 0, "VAL": 0}	
+	
 	for atome in info:
 		
-		if atome[2] in acides_amines :
-			acides_amines[atome[2]] = [atome[7]][1]
-
-
-#stat_by_residus(info)
-#print(acides_amines)
+		if atome[2] in dict_aa:
 		
+			dict_aa[atome[2]] = round(dict_aa[atome[2]] + atome[7], 2)
+			
+	list_keys = list(dict_aa.keys())
+	list_values = list(dict_aa.values())
+	
+	fig = plt.figure()
+	width = 0.5
+	plt.bar(list_keys, list_values, width, color='b')
+	# plt.savefig('Barplot_solvant_access_area_by_atom.png')
+	plt.show()
+			
+	return dict_aa
 
 
 
+
+########## Main ##############
+
+# Calculs 
+info = parse_pdb_file("7kh5.pdb")
+list_all_atomes_sondes = all_atomes_sondes(info)
+list_all_neigbord = all_neigbords(info, 15)
+access_solvant(info, list_all_neigbord, list_all_atomes_sondes)
+
+# Plots 
+test_point_graphic(info, 1)
+plot_proteine(info, 1, 10)
+
+# Statistics 
+stat_by_atom(info)
+stat_by_residus(info)
+	
 
 
 
