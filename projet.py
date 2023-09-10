@@ -1,4 +1,35 @@
+
+"""
+Script for compute the solvent accessible surface
+area from information contained in Protein Data Bank PDB file.
+
+outputs:
+
+- The solvent accessible surface area in Å².
+- A text file with the solvent accessibility of each atom.
+- A graph to visualize the points created around a atom.
+- A graph showing the selection of neighboring atoms.
+- A graph showing solvent accessibility by atom category.
+- A graph showing solvent accessibility by amino acid category.
+    
+Usage:
+======
+
+    python projet.py pdb_id
+    
+    argument1:  PDB ID of the protein studied
+    arugment2:
+"""
+
+
+__authors__ = ("Elouan Bethuel", "M2BI Université Paris Cité")
+__contact__ = ("elouan.bethuel@etu-u.paris.fr")
+__copyright__ = "MIT"
+__date__ = "05-09-2023"
+
+
 import sys
+import time
 import random
 import copy
 import numpy as np
@@ -11,40 +42,27 @@ RADIUS_H2O = 1.4
 NB_POINTS = 100
 
 
-"""
-Script for calculating a protein's solvent accessibility 
-air from information contained in its PDB file.  
-Generates: 
-- a text file with the solvent accessibility of each atom, 
-- two graphs to visualize the points created around the atoms and one 
-  to visualize the selection of neighboring atoms to an atom, 
-- two graphs with statistics on solvent accessibility by atom 
-  category and by amino acid category. 
-"""
-
-
-
 def parse_pdb_file(path_pdb_file):
     """Function to parse PDB files.
     
-    For each ATOM lines extract :
-        - residu number
-        - 
+    For each ATOM lines extract:
+        - Atom serial number
+        - Atom name
+        - Residue name
+        - Cartesian coordinates
     
     And add Van der Wadd Radius
-    For obtain : 
+    Obtained a new line like this: 
+     
     ['411', 'CB', 'ALA', -27.302, 9.269, -5.772, 1.7]
     
     Parameters
     ----------
-    path_pdb_file : str
-        the path to the PDB file 
+    path_pdb_file : str, the path to the PDB file 
     
-
     Returns
     -------
-    int
-        Le produit des deux nombres.
+    info: list of list
     """
 
     info = []
@@ -59,10 +77,11 @@ def parse_pdb_file(path_pdb_file):
 
                 if splt_line[1] != "H":
 
-                    new_line = [splt_line[1], splt_line[2], splt_line[3],
-                                float(splt_line[6]), float(splt_line[7]), float(splt_line[8])]
+                    new_line = [splt_line[1], splt_line[2], 
+                               splt_line[3], float(splt_line[6]),
+                               float(splt_line[7]), float(splt_line[8])]
 
-                    # add Van der Wadd radius
+                    # Add Van der Waals radius
 
                     if new_line[1].find("N") != -1:
                         new_line.append(1.55)
@@ -81,9 +100,24 @@ def parse_pdb_file(path_pdb_file):
     return info
 
 
-# function to generated points
 
 def create_points(x, y, z, radius):
+    """Function to generated points around an atom.
+    
+    This function generates a set of points to form a sphere around an atom. 
+    The sphere corresponds to the atom's solvation sphere. 
+    Its radius is equal to the sum of the atom's Van der Waals radius 
+    and the radius of a water molecule (1.4 Ångström). 
+    
+    Parameters
+    ----------
+    x, y, z : int, the atom's cartesian coordinates
+    radius : float, the atom's Van der Waals radius
+    
+    Returns
+    -------
+    points: a list of list
+    """
 
     r = radius + RADIUS_H2O
     theta = np.random.uniform(0, np.pi, NB_POINTS)
@@ -99,6 +133,24 @@ def create_points(x, y, z, radius):
 
 
 def create_points_graphic(info_pdb, num_atom):
+    """Function to generated points around an atom.
+
+    This function generates a set of points to form a sphere around an atom. 
+    The sphere corresponds to the atom's solvation sphere. 
+    Its radius is equal to the sum of the atom's Van der Waals radius 
+    and the radius of a water molecule (1.4 Ångström).
+    
+    
+
+    Parameters
+    ----------
+    x, y, z : int, the atom's cartesian coordinates
+    radius : float, the atom's Van der Waals radius
+
+    Returns
+    -------
+    points: a list of list, list of cartesian coordinates of each point
+    """
 
     x = info_pdb[num_atom][3]
     y = info_pdb[num_atom][4]
@@ -113,10 +165,12 @@ def create_points_graphic(info_pdb, num_atom):
     points_z = z + r * np.cos(theta)
 
     plt.figure()
+    plt.title("Viewing points on the solvation sphere")
     axes = plt.axes(projection="3d")
     axes.scatter(x, y, z, color='red') # displays the central atom in red
     axes.scatter(points_x, points_y, points_z) # displays points in red
-    plt.show()
+    plt.savefig("points.png")
+    plt.close()
     
     points = np.array([points_x, points_y, points_z]).T
 
@@ -124,6 +178,19 @@ def create_points_graphic(info_pdb, num_atom):
 
 
 def all_atoms_points(info_pdb):
+    """Functions to generate points for each atom.
+
+    This function uses the 'create-points' function 
+    to generate points for all atoms contained in the PDB file. 
+
+    Parameters
+    ----------
+    info_pdb : list of list, 
+    
+    Returns
+    -------
+    list_all_points: 
+    """
 
     list_all_points = {}
 
@@ -206,63 +273,77 @@ def plot_protein(info, num_atom, distance):
     array_z_neighbors = np.asarray(list_z_neighbors)
 
     plt.figure()
+    plt.title("Protein and neighbors to the selected atom")
+    
+    # Add a description 
+    description = "Atoms in blue, neighbors in red and the selected atom in green."
+    plt.text(1, 15, description, fontsize=12, color='black')
+    
     axes = plt.axes(projection="3d")
     axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
     axes.scatter(info[num_atom][3], info[num_atom][4], info[num_atom][5], s=300, color="green")
     axes.scatter(array_x_neighbors, array_y_neighbors, array_z_neighbors, s=200, color='red')
-    plt.show()
+    plt.savefig("neighbors.png")
+    plt.close()
 
 
-# fonction pour déterminer le pourcentage de sondes accessibles au solvant
-# pour chaque atome de la protéine
 
 def access_solvant(info, list_all_neighbors, list_all_atoms_points):
+    """Fonction pour déterminer le pourcentage de sondes accessibles au solvant
+       pour chaque atome de la protéine
+    """
+    
+    with open("{pdb_id}_output.txt", "w") as filout:
+    
+        prot_acc_area = 0
 
-    sum_acc_area = 0
-    i = 0
+        for atom in info:
 
-    for atom in info:
+            points = list_all_atoms_points[atom[0]]
+            occulted_pts = copy.deepcopy(points)
+            neighbors = list_all_neighbors[(int(atom[0])-1)]
 
-        sondes = list_all_atoms_points[atom[0]]
-        sondes_inacessibles = copy.deepcopy(sondes)
-        neighbors = list_all_neighbors[i]
+            for neighbor in neighbors:
 
-        i += 1
-        nb_sondes = 0
+                x_n = neighbor[3]
+                y_n = neighbor[4]
+                z_n = neighbor[5]
 
-        for neighbor in neighbors:
+                point_n = np.array([x_n, y_n, z_n])
 
-            x_n = neighbor[3]
-            y_n = neighbor[4]
-            z_n = neighbor[5]
+                # calculates Euclidean distances between the neighboring atom and the atom's points
+                distances = np.linalg.norm(point_n - points, axis=1)
 
-            point_n = np.array([x_n, y_n, z_n])
+                occulted = distances <= 1.4 + atom[6]
+                indices_occulted = np.where(occulted)[0]
+                occulted_pts[indices_occulted] = -1
 
-            # calcule les distances euclidiennes entre l'atome voisin et les sondes de l'atome
-            distances = np.linalg.norm(point_n - sondes, axis=1)
+            # divise par 3 car 3 coordonnées x,y,z  pour chaque sonde
+            accessible_pts = (np.size(points)/3) - np.count_nonzero(occulted_pts == -1)/3
+            prct_acc_atom = ((accessible_pts / (np.size(points)/3)) * 100)
 
-            points_inacessibles = distances <= 1.4 + atom[6]
-            indices_points_inacessibles = np.where(points_inacessibles)[0]
-            sondes_inacessibles[indices_points_inacessibles] = -1
+            acc_area_atom = (prct_acc_atom/100) * 4 * np.pi*((1.4 + atom[6])**2)
+            prot_acc_area = prot_acc_area + acc_area_atom
 
-        # divise par 3 car 3 coordonnées x,y,z  pour chaque sonde
-        nb_sondes_acessibles = (np.size(sondes)/3) - np.count_nonzero(sondes_inacessibles == -1)/3
-        prct_acc_atome = ((nb_sondes_acessibles / (np.size(sondes)/3)) * 100)
+            filout.write(f"{atom}\n")
+            filout.write(f"Number of points accessible to the solvent : {accessible_pts}%\n")
+            filout.write(f"Atom accessibility percentage : {round(prct_acc_atom,2)}%\n")
+            filout.write(f"Solvent accessibility area of ​​the atom : {round(acc_area_atom,2)} Å²\n\n")
 
-        area_acc_atome = (prct_acc_atome/100) * 4 * np.pi*((1.4 + atom[6])**2)
-        sum_acc_area = sum_acc_area + area_acc_atome
+            # add solvent accessibility area of ​​each atom to pdb info
+            atom.append(acc_area_atom)
 
-        print(f"{atom} \t")
-        print(f"Number of points accessible to the solvent : {nb_sondes_acessibles}% \t")
-        print(f"Atom accessibility percentage : {round(prct_acc_atome,2)}% \t")
-        print(f"Solvent accessibility area of ​​the atom : {round(area_acc_atome,2)} Å² \n")
-
-        # add solvent accessibility area of ​​each atom for statistics 
-        atom.append(area_acc_atome)
-
-    sum_acc_area = round(sum_acc_area, 2)
-    print(f"Final result :\t")
-    print(f"Total area exposed to solvent : {sum_acc_area} Å² \n")
+        prot_acc_area = round(prot_acc_area, 2)
+        
+        filout.write("\n")
+        filout.write("=================\n")
+        filout.write(f"Final result :\n")
+        filout.write(f"Total surface of protein exposed to solvent : {prot_acc_area} Å² \n")
+        
+        print("\n")
+        print("=================")
+        print(f"Final result :\t")
+        print(f"Total surface of protein exposed to solvent : {prot_acc_area} Å² \n")
 
 
 def stat_by_atom(info_pdb):
@@ -281,10 +362,11 @@ def stat_by_atom(info_pdb):
     list_values = list(dict_atoms.values())
 
     fig = plt.figure()
+    plt.title("Barplot solvent accessible surface area by atoms")
     width = 0.5
     plt.bar(list_atoms, list_values, width, color='b')
-    # plt.savefig('Barplot_solvant_access_area_by_atom.png')
-    plt.show()
+    plt.savefig("Barplot_atoms.png")
+    plt.close()
 
     return dict_atoms
 
@@ -307,28 +389,41 @@ def stat_by_residus(info_pdb):
     list_values = list(dict_aa.values())
 
     fig = plt.figure()
+    plt.title("Barplot solvent accessible surface area by residue")
     width = 0.5
     plt.bar(list_keys, list_values, width, color='b')
-    # plt.savefig('Barplot_solvant_access_area_by_atom.png')
-    plt.show()
+    plt.savefig("Barplot_aa.png")
+    plt.close()
 
     return dict_aa
 
 
 ########## Main ##############
 
-# Control user arguments 
-
+# Checking user arguments
 if len(sys.argv) != 2:
-    sys.exit("ERREUR : il faut exactement un argument.")
+    sys.exit("ERROR: exactly one argument is required")
     
 pdb_id = sys.argv[1]
 
-# Download PDB file 
+if len(pdb_id) < 4:
+    sys.exit("ERROR: PDB ID must have at least 4 letters")
+
+print("\n")
+print(f"Calculates the solvent accessible surface area from the {pdb_id} PDB file :\n")
+time.sleep(2)
+
+# Download PDB file
+print(f"Downloading the PDB file\t")
+time.sleep(1.2)
+print(f"Loading the PDB file\n")
+time.sleep(1.2)
 pdbl = PDBList()
 pdbl.retrieve_pdb_file(pdb_id, pdir='./', file_format='pdb')
 
-# Calculs
+# Compute the solvent accessible surface area
+print("\n")
+print("Calculation ongoing, please wait a few seconds...\n")
 info = parse_pdb_file(f"pdb{pdb_id}.ent")
 list_all_atoms_points = all_atoms_points(info)
 list_all_neighbors = all_neighbors(info, 15)
@@ -341,4 +436,3 @@ plot_protein(info, 1, 10)
 # Statistics
 stat_by_atom(info)
 stat_by_residus(info)
-
