@@ -28,6 +28,7 @@ __copyright__ = "MIT"
 __date__ = "05-09-2023"
 
 
+import os 
 import sys
 import time
 import random
@@ -104,9 +105,10 @@ def parse_pdb_file(path_pdb_file):
 def create_points(x, y, z, radius):
     """Function to generated points around an atom.
     
-    This function generates a set of points to form a sphere around an atom. 
-    The sphere corresponds to the atom's solvation sphere. 
-    Its radius is equal to the sum of the atom's Van der Waals radius 
+    This function generates a set of points to form 
+    a sphere around an atom. The sphere corresponds 
+    to the atom's solvation sphere. Its radius is equal 
+    to the sum of the atom's Van der Waals radius 
     and the radius of a water molecule (1.4 Ångström). 
     
     Parameters
@@ -135,13 +137,13 @@ def create_points(x, y, z, radius):
 def create_points_graphic(info_pdb, num_atom):
     """Function to generated points around an atom.
 
-    This function generates a set of points to form a sphere around an atom. 
-    The sphere corresponds to the atom's solvation sphere. 
-    Its radius is equal to the sum of the atom's Van der Waals radius 
+    This function generates a set of points 
+    to form a sphere around an atom. 
+    The sphere corresponds to the atom's 
+    solvation sphere. Its radius is equal 
+    to the sum of the atom's Van der Waals radius 
     and the radius of a water molecule (1.4 Ångström).
     
-    
-
     Parameters
     ----------
     x, y, z : int, the atom's cartesian coordinates
@@ -169,12 +171,13 @@ def create_points_graphic(info_pdb, num_atom):
     axes = plt.axes(projection="3d")
     axes.scatter(x, y, z, color='red') # displays the central atom in red
     axes.scatter(points_x, points_y, points_z) # displays points in red
-    plt.savefig("points.png")
+    plt.savefig(pdb_id + "_points.png")
     plt.close()
     
     points = np.array([points_x, points_y, points_z]).T
 
     return points
+
 
 
 def all_atoms_points(info_pdb):
@@ -202,10 +205,28 @@ def all_atoms_points(info_pdb):
     return list_all_points
 
 
-# Retourne la liste des voisins d'un atome à partir de ses coordonnées
-# et d'un  seuil (treeshold : distance en Angstrom)
 
-def neighbors(num_atom, pdb, threeshold):
+def neighbors(num_atom, pdb, threshold):
+    """Function to identify an atom's neighbors.
+    
+    This function identifies all neighbors 
+    located at a certain distance from the atom.
+    Using the atom's Cartesian coordinates, 
+    calculate the distance between this atom 
+    and all other atoms in the PDB file. 
+    If the distance is less than the threshold, 
+    the atom is considered as a neighbor. 
+
+    Parameters
+    ----------
+    num_atom : int,
+    pdb : list of list, 
+    threshold : int, 
+
+    Returns
+    -------
+    list_neighbors: 
+    """
 
     info_pdb = copy.deepcopy(pdb)
 
@@ -224,18 +245,32 @@ def neighbors(num_atom, pdb, threeshold):
 
         d = np.sqrt((x - x_nb)**2 + (y - y_nb)**2 + (z - z_nb)**2)
 
-        if d < threeshold:
+        if d < threshold:
             list_neighbors.append(atom)
 
     return list_neighbors
 
 
-def all_neighbors(info_pdb, threeshold):
+def all_neighbors(info_pdb, threshold):
+    """Function to identify neighbors of all atoms. 
+    
+    This function uses the "neighbors" function 
+    to identify the neighbors of each atom in the PDB file.
+
+    Parameters
+    ----------
+    info_pdb : list of list, 
+    threshold : int, 
+
+    Returns
+    -------
+    list_all_neighbors: list of list, 
+    """
 
     list_all_neighbors = []
 
     for i in range(len(info_pdb)):
-        list_all_neighbors.append(neighbors(i+1, info, threeshold))
+        list_all_neighbors.append(neighbors(i+1, info, threshold))
 
     return list_all_neighbors
 
@@ -283,7 +318,7 @@ def plot_protein(info, num_atom, distance):
     axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
     axes.scatter(info[num_atom][3], info[num_atom][4], info[num_atom][5], s=300, color="green")
     axes.scatter(array_x_neighbors, array_y_neighbors, array_z_neighbors, s=200, color='red')
-    plt.savefig("neighbors.png")
+    plt.savefig(pdb_id + "_neighbors.png")
     plt.close()
 
 
@@ -293,15 +328,18 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points):
        pour chaque atome de la protéine
     """
     
-    with open("{pdb_id}_output.txt", "w") as filout:
+    file_name = pdb_id + "_ouput.txt"
+    with open(file_name, "w") as filout:
     
         prot_acc_area = 0
+        i = 0 
 
         for atom in info:
 
             points = list_all_atoms_points[atom[0]]
             occulted_pts = copy.deepcopy(points)
-            neighbors = list_all_neighbors[(int(atom[0])-1)]
+            neighbors = list_all_neighbors[i]
+            i = i+1
 
             for neighbor in neighbors:
 
@@ -314,15 +352,15 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points):
                 # calculates Euclidean distances between the neighboring atom and the atom's points
                 distances = np.linalg.norm(point_n - points, axis=1)
 
-                occulted = distances <= 1.4 + atom[6]
+                occulted = distances <= RADIUS_H2O + atom[6]
                 indices_occulted = np.where(occulted)[0]
                 occulted_pts[indices_occulted] = -1
 
             # divise par 3 car 3 coordonnées x,y,z  pour chaque sonde
             accessible_pts = (np.size(points)/3) - np.count_nonzero(occulted_pts == -1)/3
-            prct_acc_atom = ((accessible_pts / (np.size(points)/3)) * 100)
+            prct_acc_atom = ((accessible_pts / (np.size(points)/3)) * NB_POINTS)
 
-            acc_area_atom = (prct_acc_atom/100) * 4 * np.pi*((1.4 + atom[6])**2)
+            acc_area_atom = (prct_acc_atom/NB_POINTS) * 4 * np.pi*((RADIUS_H2O + atom[6])**2)
             prot_acc_area = prot_acc_area + acc_area_atom
 
             filout.write(f"{atom}\n")
@@ -365,7 +403,7 @@ def stat_by_atom(info_pdb):
     plt.title("Barplot solvent accessible surface area by atoms")
     width = 0.5
     plt.bar(list_atoms, list_values, width, color='b')
-    plt.savefig("Barplot_atoms.png")
+    plt.savefig(pdb_id + "_barplot_atoms.png")
     plt.close()
 
     return dict_atoms
@@ -392,7 +430,7 @@ def stat_by_residus(info_pdb):
     plt.title("Barplot solvent accessible surface area by residue")
     width = 0.5
     plt.bar(list_keys, list_values, width, color='b')
-    plt.savefig("Barplot_aa.png")
+    plt.savefig(pdb_id + "_barplot_aa.png")
     plt.close()
 
     return dict_aa
@@ -413,6 +451,7 @@ print("\n")
 print(f"Calculates the solvent accessible surface area from the {pdb_id} PDB file :\n")
 time.sleep(2)
 
+
 # Download PDB file
 print(f"Downloading the PDB file\t")
 time.sleep(1.2)
@@ -420,6 +459,7 @@ print(f"Loading the PDB file\n")
 time.sleep(1.2)
 pdbl = PDBList()
 pdbl.retrieve_pdb_file(pdb_id, pdir='./', file_format='pdb')
+
 
 # Compute the solvent accessible surface area
 print("\n")
@@ -429,10 +469,32 @@ list_all_atoms_points = all_atoms_points(info)
 list_all_neighbors = all_neighbors(info, 15)
 access_solvant(info, list_all_neighbors, list_all_atoms_points)
 
+
 # Plots
 create_points_graphic(info, 1)
 plot_protein(info, 1, 10)
 
+
 # Statistics
 stat_by_atom(info)
 stat_by_residus(info)
+
+
+# Create and delete folders
+if not os.path.exists("pdb_folder"):
+    os.mkdir("pdb_folder")
+if not os.path.exists("outputs"):
+    os.mkdir("outputs")
+if os.path.exists("obsolete"):
+    os.rmdir("obsolete")
+
+# Move files
+path = os.getcwd()
+os.rename(path + "/pdb" + pdb_id + ".ent", path + "/pdb_folder/pdb" + pdb_id + ".ent")
+os.rename(path + "/" + pdb_id + "_ouput.txt" , path + "/outputs/" + pdb_id + "_ouput.txt")
+os.rename(path + "/" + pdb_id + "_barplot_aa.png" , path + "/outputs/" + pdb_id + "_barplot_aa.png")
+os.rename(path + "/" + pdb_id + "_barplot_atoms.png" , path + "/outputs/" + pdb_id + "_barplot_atoms.png")
+os.rename(path + "/" + pdb_id + "_neighbors.png" , path + "/outputs/" + pdb_id + "_neighbors.png")
+os.rename(path + "/" + pdb_id + "_points.png" , path + "/outputs/" + pdb_id + "_points.png")
+
+
