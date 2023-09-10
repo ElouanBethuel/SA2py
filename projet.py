@@ -11,16 +11,48 @@ RADIUS_H2O = 1.4
 NB_POINTS = 100
 
 
-# Script to parse PDB files and add Radius and area of solvated sphere
+"""
+Script for calculating a protein's solvent accessibility 
+air from information contained in its PDB file.  
+Generates: 
+- a text file with the solvent accessibility of each atom, 
+- two graphs to visualize the points created around the atoms and one 
+  to visualize the selection of neighboring atoms to an atom, 
+- two graphs with statistics on solvent accessibility by atom 
+  category and by amino acid category. 
+"""
+
+
 
 def parse_pdb_file(path_pdb_file):
+    """Function to parse PDB files.
+    
+    For each ATOM lines extract :
+        - residu number
+        - 
+    
+    And add Van der Wadd Radius
+    For obtain : 
+    ['411', 'CB', 'ALA', -27.302, 9.269, -5.772, 1.7]
+    
+    Parameters
+    ----------
+    path_pdb_file : str
+        the path to the PDB file 
+    
+
+    Returns
+    -------
+    int
+        Le produit des deux nombres.
+    """
 
     info = []
 
     with open(path_pdb_file, "r") as pdb_file:
 
         for line in pdb_file:
-
+        
             if line.startswith("ATOM"):
 
                 splt_line = line.split()
@@ -141,7 +173,7 @@ def all_neighbors(info_pdb, threeshold):
     return list_all_neighbors
 
 
-def plot_proteine(info, num_atom, distance):
+def plot_protein(info, num_atom, distance):
 
     list_x_pdb = []
     list_y_pdb = []
@@ -303,50 +335,10 @@ list_all_neighbors = all_neighbors(info, 15)
 access_solvant(info, list_all_neighbors, list_all_atoms_points)
 
 # Plots
-#create_points_graphic(info, 1)
-#plot_proteine(info, 1, 10)
+create_points_graphic(info, 1)
+plot_protein(info, 1, 10)
 
 # Statistics
-#stat_by_atom(info)
-#stat_by_residus(info)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+stat_by_atom(info)
+stat_by_residus(info)
 
