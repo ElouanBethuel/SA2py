@@ -11,7 +11,10 @@
 
 ## How tu use the program
 
-Clone the repository   
+Clone the repository  
+'''
+git clone 
+'''
 Move to the new directory   
 Create a the conda environnement   
 Activate the conda environnement   
