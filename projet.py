@@ -8,9 +8,10 @@ outputs:
 - The solvent accessible surface area in Å².
 - A text file with the solvent accessibility of each atom.
 - A graph to visualize the points created around a atom.
-- A graph showing the selection of neighboring atoms.
+- A pymol file showing the selection of neighboring atoms.
 - A graph showing solvent accessibility by atom category.
 - A graph showing solvent accessibility by amino acid category.
+- A pymol file to visualize the solvent accessibility. 
     
 Usage:
 ======
@@ -24,20 +25,22 @@ Usage:
 
 __authors__ = ("Elouan Bethuel", "M2BI Université Paris Cité")
 __contact__ = ("elouan.bethuel@etu-u.paris.fr")
-__copyright__ = "MIT"
 __date__ = "05-09-2023"
 
 
-import os 
+import os
 import sys
 import time
 import random
 import copy
+import pymol
+from pymol import cmd
 import numpy as np
 import Bio
 from Bio.PDB import PDBList
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
+
 
 RADIUS_H2O = 1.4
 NB_POINTS = 100
@@ -275,52 +278,53 @@ def all_neighbors(info_pdb, threshold):
     return list_all_neighbors
 
 
-def plot_protein(info, num_atom, distance):
 
-    list_x_pdb = []
-    list_y_pdb = []
-    list_z_pdb = []
+def plot_pymol_surface(info):
+	
+	cmd.load("pdb" + pdb_id + ".ent", "proteine")
 
-    for atom in info:
-
-        list_x_pdb.append(atom[3])
-        list_y_pdb.append(atom[4])
-        list_z_pdb.append(atom[5])
-
-    array_x_pdb = np.asarray(list_x_pdb)
-    array_y_pdb = np.asarray(list_y_pdb)
-    array_z_pdb = np.asarray(list_z_pdb)
-
-    list_atoms_neighbors = neighbors(num_atom, info, distance)
-
-    list_x_neighbors = []
-    list_y_neighbors = []
-    list_z_neighbors = []
-
-    for atom in list_atoms_neighbors:
-
-        list_x_neighbors.append(atom[3])
-        list_y_neighbors.append(atom[4])
-        list_z_neighbors.append(atom[5])
-
-    array_x_neighbors = np.asarray(list_x_neighbors)
-    array_y_neighbors = np.asarray(list_y_neighbors)
-    array_z_neighbors = np.asarray(list_z_neighbors)
-
-    plt.figure()
-    plt.title("Protein and neighbors to the selected atom")
+	list_color_pdb = []
     
-    # Add a description 
-    description = "Atoms in blue, neighbors in red and the selected atom in green."
-    plt.text(1, 15, description, fontsize=12, color='black')
-    
-    axes = plt.axes(projection="3d")
-    axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, color="blue")
-    axes.scatter(info[num_atom][3], info[num_atom][4], info[num_atom][5], s=300, color="green")
-    axes.scatter(array_x_neighbors, array_y_neighbors, array_z_neighbors, s=200, color='red')
-    plt.savefig(pdb_id + "_neighbors.png")
-    plt.close()
+	for atom in info:
+		list_color_pdb.append(atom[7])
 
+	array_color_pdb = np.asarray(list_color_pdb)
+
+	def colormap(valeur):
+		if valeur <= 1.0 :
+		    return 'blue'
+		elif valeur <= 5.0 :
+		    return 'green'
+		elif valeur <= 15.0 :
+		    return 'yellow'
+		elif valeur <= 30.0 :
+		    return 'orange'
+		else:
+		    return 'red'
+
+	for idx, value in enumerate(array_color_pdb):
+		
+		color = colormap(value)
+		cmd.color(color, f'proteine and id {idx + 1}')
+	
+	cmd.show('surface', 'proteine')
+	cmd.save(pdb_id + "_surface.pse", "proteine")
+	
+
+def plot_pymol_prot_n(info, num_atom, distance):
+	
+	cmd.load("pdb" + pdb_id + ".ent", "proteine")
+	list_color_pdb = []
+	list_atoms_neighbors = neighbors(num_atom, info, distance)
+	
+	for id_atom, atom in enumerate(info):
+		if atom in list_atoms_neighbors:
+			cmd.color("red", f'proteine and id {id_atom + 1}')
+		else:
+			cmd.color("blue", f'proteine and id {id_atom + 1}')
+			
+	#cmd.show('sphere', 'proteine')
+	cmd.save(pdb_id + "_neighbors.pse", "proteine")
 
 
 def access_solvant(info, list_all_neighbors, list_all_atoms_points):
@@ -438,155 +442,58 @@ def stat_by_residus(info_pdb):
 
 ########## Main ##############
 
-# Checking user arguments
-if len(sys.argv) != 2:
-    sys.exit("ERROR: exactly one argument is required")
-    
-pdb_id = sys.argv[1]
+if __name__ == "__main__":
 
-if len(pdb_id) < 4:
-    sys.exit("ERROR: PDB ID must have at least 4 letters")
+    # Checking user arguments
+    if len(sys.argv) != 2:
+        sys.exit("ERROR: exactly one argument is required")
+    pdb_id = sys.argv[1]
+    if len(pdb_id) < 4:
+        sys.exit("ERROR: PDB ID must have at least 4 letters")
+    print("\n")
+    print(f"Calculates the solvent accessible surface area from the {pdb_id} PDB file :\n")
+    time.sleep(2)
 
-print("\n")
-print(f"Calculates the solvent accessible surface area from the {pdb_id} PDB file :\n")
-time.sleep(2)
+    # Download PDB file
+    print(f"Downloading the PDB file\t")
+    time.sleep(1.2)
+    print(f"Loading the PDB file\n")
+    time.sleep(1.2)
+    pdbl = PDBList()
+    pdbl.retrieve_pdb_file(pdb_id, pdir='./', file_format='pdb')
 
+    # Compute the solvent accessible surface area
+    print("\n")
+    print("Calculation ongoing, please wait a few seconds...\n")
+    info = parse_pdb_file(f"pdb{pdb_id}.ent")
+    list_all_atoms_points = all_atoms_points(info)
+    list_all_neighbors = all_neighbors(info, 15)
+    access_solvant(info, list_all_neighbors, list_all_atoms_points)
 
-# Download PDB file
-print(f"Downloading the PDB file\t")
-time.sleep(1.2)
-print(f"Loading the PDB file\n")
-time.sleep(1.2)
-pdbl = PDBList()
-pdbl.retrieve_pdb_file(pdb_id, pdir='./', file_format='pdb')
+    # Plots
+    create_points_graphic(info, 1)
+    plot_pymol_surface(info)
+    plot_pymol_prot_n(info, 1, 10)
 
+    # Statistics
+    stat_by_atom(info)
+    stat_by_residus(info)
 
-# Compute the solvent accessible surface area
-print("\n")
-print("Calculation ongoing, please wait a few seconds...\n")
-info = parse_pdb_file(f"pdb{pdb_id}.ent")
-list_all_atoms_points = all_atoms_points(info)
-list_all_neighbors = all_neighbors(info, 15)
-access_solvant(info, list_all_neighbors, list_all_atoms_points)
+    # Create and delete folders
+    if not os.path.exists("pdb_folder"):
+        os.mkdir("pdb_folder")
+    if not os.path.exists("outputs"):
+        os.mkdir("outputs")
+    if os.path.exists("obsolete"):
+        os.rmdir("obsolete")
 
-
-# Plots
-create_points_graphic(info, 1)
-plot_protein(info, 1, 10)
-
-
-# Statistics
-stat_by_atom(info)
-stat_by_residus(info)
-
-
-# Create and delete folders
-if not os.path.exists("pdb_folder"):
-    os.mkdir("pdb_folder")
-if not os.path.exists("outputs"):
-    os.mkdir("outputs")
-if os.path.exists("obsolete"):
-    os.rmdir("obsolete")
-
-# Move files
-path = os.getcwd()
-os.rename(path + "/pdb" + pdb_id + ".ent", path + "/pdb_folder/pdb" + pdb_id + ".ent")
-os.rename(path + "/" + pdb_id + "_ouput.txt" , path + "/outputs/" + pdb_id + "_ouput.txt")
-os.rename(path + "/" + pdb_id + "_barplot_aa.png" , path + "/outputs/" + pdb_id + "_barplot_aa.png")
-os.rename(path + "/" + pdb_id + "_barplot_atoms.png" , path + "/outputs/" + pdb_id + "_barplot_atoms.png")
-os.rename(path + "/" + pdb_id + "_neighbors.png" , path + "/outputs/" + pdb_id + "_neighbors.png")
-os.rename(path + "/" + pdb_id + "_points.png" , path + "/outputs/" + pdb_id + "_points.png")
-
-
-
-
-
-
-
-
-
-
-
-
-def plot_protein_acc(info):
-
-    list_x_pdb = []
-    list_y_pdb = []
-    list_z_pdb = []
-    list_color_pdb = []
-    
-    for atom in info:
-    
-        list_x_pdb.append(atom[3])
-        list_y_pdb.append(atom[4])
-        list_z_pdb.append(atom[5])
-        list_color_pdb.append(atom[7])
-        
-    array_x_pdb = np.asarray(list_x_pdb)
-    array_y_pdb = np.asarray(list_y_pdb)
-    array_z_pdb = np.asarray(list_z_pdb)
-    array_color_pdb = np.asarray(list_color_pdb)
-    
-    plt.figure()
-    plt.title("Protein and neighbors to the selected atom")
-    axes = plt.axes(projection="3d")
-    axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, s= 100, c= array_color_pdb, cmap='cividis')
-    #plt.colorbar(label='Valeurs')
-    plt.show()
-
-
-
-
-#plot_protein_acc(info)
-
-
-
-
-
-
-
-
-
-import pymol
-from pymol import cmd
-
-# Charger votre structure moléculaire
-cmd.load('3i40.pdb', 'my_molecule')
-
-
-# Créer une liste de valeurs associées à chaque atome (à titre d'exemple)
-valeurs_atomiques = [0.5, 0.7, 0.2, 0.9, 0.3, 0.6]  # Exemple de valeurs, assurez-vous d'avoir la même longueur que le nombre d'atomes
-
-
-# Définir une colormap (à titre d'exemple)
-def colormap(valeur):
-    if valeur < 0.4:
-        return 'red'
-    elif valeur < 0.7:
-        return 'green'
-    else:
-        return 'blue'
-        
-        
-# Colorer les atomes en fonction des valeurs
-for idx, valeur in enumerate(valeurs_atomiques):
-    
-    couleur = colormap(valeur)
-    cmd.color(couleur, f'my_molecule and resi {idx + 1}')
-    
-    # Sauvegarder l'image avec les atomes colorés
-    cmd.png('output.png', width=800, height=600, dpi=300)
-    cmd.quit()
-
-
-
-
-
-
-
-
-
-
-
-
+    # Move files
+    path = os.getcwd()
+    os.rename(path + "/pdb" + pdb_id + ".ent", path + "/pdb_folder/pdb" + pdb_id + ".ent")
+    os.rename(path + "/" + pdb_id + "_ouput.txt", path + "/outputs/" + pdb_id + "_ouput.txt")
+    os.rename(path + "/" + pdb_id + "_barplot_aa.png", path + "/outputs/" + pdb_id + "_barplot_aa.png")
+    os.rename(path + "/" + pdb_id + "_barplot_atoms.png", path + "/outputs/" + pdb_id + "_barplot_atoms.png")
+    os.rename(path + "/" + pdb_id + "_points.png", path + "/outputs/" + pdb_id + "_points.png")
+    os.rename(path + "/" + pdb_id + "_surface.pse", path + "/outputs/" + pdb_id + "_surface.pse")
+    os.rename(path + "/" + pdb_id + "_neighbors.pse", path + "/outputs/" + pdb_id + "_neighbors.pse")
 
