@@ -498,3 +498,95 @@ os.rename(path + "/" + pdb_id + "_neighbors.png" , path + "/outputs/" + pdb_id +
 os.rename(path + "/" + pdb_id + "_points.png" , path + "/outputs/" + pdb_id + "_points.png")
 
 
+
+
+
+
+
+
+
+
+
+
+def plot_protein_acc(info):
+
+    list_x_pdb = []
+    list_y_pdb = []
+    list_z_pdb = []
+    list_color_pdb = []
+    
+    for atom in info:
+    
+        list_x_pdb.append(atom[3])
+        list_y_pdb.append(atom[4])
+        list_z_pdb.append(atom[5])
+        list_color_pdb.append(atom[7])
+        
+    array_x_pdb = np.asarray(list_x_pdb)
+    array_y_pdb = np.asarray(list_y_pdb)
+    array_z_pdb = np.asarray(list_z_pdb)
+    array_color_pdb = np.asarray(list_color_pdb)
+    
+    plt.figure()
+    plt.title("Protein and neighbors to the selected atom")
+    axes = plt.axes(projection="3d")
+    axes.scatter(array_x_pdb, array_y_pdb, array_z_pdb, s= 100, c= array_color_pdb, cmap='cividis')
+    #plt.colorbar(label='Valeurs')
+    plt.show()
+
+
+
+
+#plot_protein_acc(info)
+
+
+
+
+
+
+
+
+
+import pymol
+from pymol import cmd
+
+# Charger votre structure moléculaire
+cmd.load('3i40.pdb', 'my_molecule')
+
+
+# Créer une liste de valeurs associées à chaque atome (à titre d'exemple)
+valeurs_atomiques = [0.5, 0.7, 0.2, 0.9, 0.3, 0.6]  # Exemple de valeurs, assurez-vous d'avoir la même longueur que le nombre d'atomes
+
+
+# Définir une colormap (à titre d'exemple)
+def colormap(valeur):
+    if valeur < 0.4:
+        return 'red'
+    elif valeur < 0.7:
+        return 'green'
+    else:
+        return 'blue'
+        
+        
+# Colorer les atomes en fonction des valeurs
+for idx, valeur in enumerate(valeurs_atomiques):
+    
+    couleur = colormap(valeur)
+    cmd.color(couleur, f'my_molecule and resi {idx + 1}')
+    
+    # Sauvegarder l'image avec les atomes colorés
+    cmd.png('output.png', width=800, height=600, dpi=300)
+    cmd.quit()
+
+
+
+
+
+
+
+
+
+
+
+
+
