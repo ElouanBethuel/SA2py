@@ -12,12 +12,13 @@
 ## How tu use the program
 
 Clone the repository  
-'''
-git clone 
-'''
+``git clone ``
 Move to the new directory   
-Create a the conda environnement   
-Activate the conda environnement   
+``cd ``   
+Create and activate the conda environnement   
+``conda env create -f sasa_project.yml   
+  conda acvitate sas_project``   
+  
 Execute the script   
 
 ## Ouputs
