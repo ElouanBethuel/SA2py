@@ -19,7 +19,14 @@ Execute the script
 
 ## Ouputs
 
-Two folders are created during the first execution
-- Outputs : for stock 
+
+
+Two folders are also created during the first lauchn
+- Outputs : for stock outputs
+- pdb :  for stok all pdb files
+
+In Outupt 
 
 ## Results 
+
+
