@@ -12,20 +12,69 @@
 ## How tu use the program
 
 Clone the repository   
-Move to the new directory   
-Create a the conda environnement   
-Activate the conda environnement   
+```sh
+git clone https://github.com/ElouanBethuel/SASA.git
+```
+Move to the project directory   
+```sh
+cd SASA
+```
+Create and activate the conda environnement   
+```sh
+conda env create -f sasa_project.yml
+conda activate sasa_project 
+```
 Execute the script   
+```sh
+python project.py 7kh5
+```
+You can replace 7kh5 by any another PDB ID. This program work with many PDB files. If the PDB file format is not compatible an error message is raise. 
 
 ## Ouputs
 
+IIn the shell, the Solvent Accessible Surface Area of the protein is displayed :
+
+```
+Calculates the solvent accessible surface area from the 7kh5 PDB file :
+
+Downloading the PDB file	
+Loading the PDB file
+
+Downloading PDB structure '7kh5'...
 
 
-Two folders are also created during the first lauchn
-- Outputs : for stock outputs
-- pdb :  for stok all pdb files
+Calculation ongoing, please wait a few seconds...
 
-In Outupt 
+=================
+Final result :	
+The solvent accessible surface area of the protein : 6503.51 Å² 
+```
+
+### Many files are also generated : 
+- The pdb file 
+- A text file with the solvent accessibility of each atom
+- A png file (graph) to visualize the points created around a atom
+- A png file (graph) showing solvent accessibility by atom category
+- A png file (graph) showing solvent accessibility by amino acid category
+- A pymol file for showing the accessibility of the protein surface
+- A pymol file for showing the neighbors selection 
+
+This files are stored in two folders : 
+- Outputs : for stored all outputs
+- PDB :  for stored all pdb files
+
+The file name format is always the same (exemple with the 7kh5 pdb ID):
+- pdb file : pdb7kh5.ent (pdb + pdb_id + .ent)
+- png file : pdb_id + name_file + .png 
+- texte file : pdb_id + .txt 
+- pymol file (neihgbors) : pdb_id + _neighbors.pse 
+- pymol file (surface) : pdb_id + _surface.pse
+
+For open pymol files with the shell 
+```sh 
+pymol outputs/7kh5_surface.pse 
+```
+![image](.readme_images/pymol_7kh5_surface.png)
 
 ## Results 
 
