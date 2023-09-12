@@ -11,6 +11,7 @@
 
 ## How tu use the program
 
+<<<<<<< HEAD
 Clone the repository   
 ```sh
 git clone https://github.com/ElouanBethuel/SASA.git
@@ -24,6 +25,16 @@ Create and activate the conda environnement
 conda env create -f sasa_project.yml
 conda activate sasa_project 
 ```
+=======
+Clone the repository  
+``git clone ``
+Move to the new directory   
+``cd ``   
+Create and activate the conda environnement   
+``conda env create -f sasa_project.yml   
+  conda acvitate sas_project``   
+  
+>>>>>>> 57b9d3b7f9899efe90dcb40eff9690510af407fd
 Execute the script   
 ```sh
 python project.py 7kh5
