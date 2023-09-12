@@ -1,5 +1,5 @@
 
-# SASA Project (Solvent-Accessible Surface Area)
+# SASA (Solvent-Accessible Surface Area)
 
  Program to calculate the Solvent-Accessible Surface Area (SASA) of a protein.   
  Give the the area in Square Angstrom for each atom and for the protein.
@@ -30,7 +30,9 @@ python project.py 7kh5
 ```
 You can replace 7kh5 by any another PDB ID. This program work with many PDB files. If the PDB file format is not compatible an error message is raise. 
 
-## Ouputs
+<br>
+
+## Outputs
 
 IIn the shell, the Solvent Accessible Surface Area of the protein is displayed :
 
@@ -59,18 +61,18 @@ The solvent accessible surface area of the protein : 6503.51 Å²
 - A pymol file for showing the accessibility of the protein surface
 - A pymol file for showing the neighbors selection 
 
-This files are stored in two folders : 
+### This files are stored in two folders : 
 - Outputs : for stored all outputs
 - PDB :  for stored all pdb files
 
-The file name format is always the same (exemple with the 7kh5 pdb ID):
+### The file name format is always the same (exemple with the 7kh5 pdb ID):
 - pdb file : pdb7kh5.ent (pdb + pdb_id + .ent)
 - png file : pdb_id + name_file + .png 
 - texte file : pdb_id + .txt 
 - pymol file (neihgbors) : pdb_id + _neighbors.pse 
 - pymol file (surface) : pdb_id + _surface.pse
 
-For open pymol files with the shell 
+### To visualize pymol files with the shell 
 ```sh 
 pymol outputs/7kh5_surface.pse 
 ```
@@ -78,15 +80,40 @@ pymol outputs/7kh5_surface.pse
 
 This image shows the 7kh5 protein with its surface coloured according to its accessibility to the solvent: the blue parts are the least accessible and the red ones the most accessible. 
 
+<br>
+
 ## Results 
 
-Comparison of our program results with those of PDBePISA   
-With 400 points by atoms to model the solvation sphere and a radius of 1.4 for the water molecule 
+### Comparison of our program results with those of PDBePISA  
 
-| PDD ID | SASA        | PDBePPISA   | Similarity score |
+According to the website https://www.ebi.ac.uk/pdbe/pisa/ :  PDBePISA (Proteins, Interfaces, Structures and Assemblies) is an interactive tool for the exploration of macromolecular interfaces.
+
+<br>
+
+With **20 points** by atoms to model the solvation sphere : 
+
+| PDD ID | SASA         | PDBePPISA   | Similarity score |
+|--------|--------------|-------------|------------------|
+| 3i40   |  3644.85 Å²  | 4902.6 Å²   | 34.5 %           |
+| 7kh5   |  6821.96 Å²  | 6346.1 Å²   | 6.9 %            |
+| 3wgt   |  28621.66 Å² | 31243.3 Å²  | 8.1 %            |
+| 3rt9   |  21911.93 Å² |  22296.2 Å² | 1.7 %            |
+| 1us7   |  21904.68 Å² | 23019.5 Å²  | 4.8 %            |  
+
+<br>
+
+With **400 points** by atoms to model the solvation sphere :
+
+| PDD ID | SASA        | PDBePISA    | Similarity score |
 |--------|-------------|-------------|------------------|
 | 3i40   | 3727.46 Å²  | 4902.6 Å²   | 31.5 %           |
 | 7kh5   | 6563.24 Å²  | 6346.1 Å²   | 3.3 %            |
 | 3wgt   | 29599.49 Å² | 31243.3 Å²  | 5.5 %            |
-| 3rt9   | 22202.34 Å² |  22296,2 Å² | 0,42 %           |
-| 1us7   | 22182.53 Å² | 23019,5 Å²  | 3.7 %            |
+| 3rt9   | 22202.34 Å² |  22296.2 Å² | 0.42 %           |
+| 1us7   | 22182.53 Å² | 23019.5 Å²  | 3.7 %            |
+
+
+We can see that the higher the number of points, the better the performance.   
+In addition, performance is much better for medium and large proteins than for small ones (3i40 for example).  
+
+---
