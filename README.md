@@ -76,6 +76,17 @@ pymol outputs/7kh5_surface.pse
 ```
 ![image](.readme_images/pymol_7kh5_surface.png)
 
+This image shows the 7kh5 protein with its surface coloured according to its accessibility to the solvent: the blue parts are the least accessible and the red ones the most accessible. 
+
 ## Results 
 
+Comparison of our program results with those of PDBePISA   
+With 400 points by atoms to model the solvation sphere and a radius of 1.4 for the water molecule 
 
+| PDD ID | SASA        | PDBePPISA   | Similarity score |
+|--------|-------------|-------------|------------------|
+| 3i40   | 3727.46 Å²  | 4902.6 Å²   | 31.5 %           |
+| 7kh5   | 6563.24 Å²  | 6346.1 Å²   | 3.3 %            |
+| 3wgt   | 29599.49 Å² | 31243.3 Å²  | 5.5 %            |
+| 3rt9   | 22202.34 Å² |  22296,2 Å² | 0,42 %           |
+| 1us7   | 22182.53 Å² | 23019,5 Å²  | 3.7 %            |
