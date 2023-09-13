@@ -2,7 +2,7 @@
 # SASA (Solvent-Accessible Surface Area)
 
  Program to calculate the Solvent-Accessible Surface Area (SASA) of a protein.   
- Give the the area in Square Angstrom for each atom and for the protein.
+ Give the the area in Square Angstrom for each atom and for the protein.   
  This program is devide in three scripts python :   
  - main.py, to run the program 
  - sasa.py, with all functions to compute the SASA
@@ -29,12 +29,16 @@ Create and activate the conda environnement
 conda env create -f sasa_project.yml
 conda activate sasa_project 
 ``` 
+<br>
+
 ## Run the program
 Execute the script   
 ```sh
 python main.py 7kh5
 ```
-You can replace 7kh5 by any another PDB ID. This program work with many PDB files. If the PDB file format is not compatible an error message is raise. 
+You can replace 7kh5 by any another PDB ID.   
+ This program work with many PDB files.   
+ If the PDB file format is not compatible an error message is raise. 
 
 <br>
 
