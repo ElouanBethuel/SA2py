@@ -36,32 +36,27 @@ from Bio.PDB import PDBList
 import sasa
 import sasa_stat
 
-parser = argparse.ArgumentParser(description=("Program to calculate the Solvent Accessible Surface Area (SASA) of a protein"))
-parser.usage = "main.py pdb_id number_points -s"
-parser.add_argument("pdb_id", type=str, help="ID of the PDB file")
-parser.add_argument("number_points", type=int, help="Number of points by atom to model the solvation sphere")
-parser.add_argument("-s", "--statistical", action="store_true", help=("produce statisticals graphics"))
-args = parser.parse_args()
 
 ########## Main ##############
 
 if __name__ == "__main__":
 
     # Checking user arguments
-    #if len(sys.argv) != 2:
-    #    sys.exit("ERROR: exactly one argument is required")
-    #pdb_id = sys.argv[1]
-    #if len(pdb_id) < 4:
-    #    sys.exit("ERROR: PDB ID must have at least 4 letters")
+    parser = argparse.ArgumentParser(description=("Program to calculate the Solvent Accessible Surface Area (SASA) of a protein"))
+    parser.usage = "main.py pdb_id number_points -s"
+    parser.add_argument("pdb_id", type=str, help="ID of the PDB file")
+    parser.add_argument("number_points", type=int, help="Number of points by atom to model the solvation sphere")
+    parser.add_argument("-s", "--statistical", action="store_true", help=("produce statisticals graphics"))
+    args = parser.parse_args()
     print("\n")
     print(f"Calculates the solvent accessible surface area from the {args.pdb_id} PDB file :\n")
-    time.sleep(2)
+    time.sleep(1)
 
     # Download PDB file
     print(f"Downloading the PDB file\t")
-    time.sleep(1.2)
+    time.sleep(1)
     print(f"Loading the PDB file\n")
-    time.sleep(1.2)
+    time.sleep(1)
     pdbl = PDBList()
     pdbl.retrieve_pdb_file(args.pdb_id, pdir='./', file_format='pdb')
 

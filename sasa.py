@@ -197,8 +197,27 @@ def all_neighbors(info_pdb, threshold):
 
 
 def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
-    """Fonction pour déterminer le pourcentage de sondes accessibles au solvant
-       pour chaque atome de la protéine
+    """Function to identify an atom's neighbors.
+    This function identifies all neighbors 
+    located at a certain distance from the atom.
+    Using the atom's Cartesian coordinates, 
+    calculate the distance between this atom 
+    and all other atoms in the PDB file. 
+    If the distance is less than the threshold, 
+    the atom is considered as a neighbor. 
+
+    Parameters
+    ----------
+    info : list of list,
+    list_all_neighbors : list of list, 
+    list_all_atoms_points : list of list, 
+    pdb_id : string, 
+    
+    Returns
+    -------
+    No returns 
+    Print the total surface of protein exposed to solvent
+    And writh in a "pdb_id_output.txt" file the accessibilit by atom. 
     """
     
     file_name = pdb_id + "_ouput.txt"

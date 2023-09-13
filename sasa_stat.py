@@ -46,8 +46,10 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
     plt.figure()
     plt.title("Viewing points on the solvation sphere")
     axes = plt.axes(projection="3d")
-    axes.scatter(x, y, z, color='red') # displays the central atom in red
-    axes.scatter(points_x, points_y, points_z) # displays points in red
+    # displays the central atom in red
+    axes.scatter(x, y, z, color='red')
+    # displays points in red
+    axes.scatter(points_x, points_y, points_z)
     plt.savefig(pdb_id + "_points.png")
     plt.close()
     
@@ -57,10 +59,27 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
     
 
 def plot_pymol_surface(info, pdb_id):
-	
-	cmd.load("pdb" + pdb_id + ".ent", "proteine")
-
-	list_color_pdb = []
+    """function to generate a protein pymol file.
+    This function generates a pymol file based of 
+    the PDB file of the protein with a specific 
+    coloration of of each atom as a function 
+    of their solvent surface area. In red, the atoms 
+    most acessible and in blue the less accessible.
+    
+    Parameters
+    ----------
+    info : list of list, 
+    pdb_id : string, 
+    
+    Returns
+    -------
+    No returns
+    Generate a pymol file (.pse) 
+    """
+    
+    cmd.load("pdb" + pdb_id + ".ent", "proteine")
+    
+    list_color_pdb = []
     
 	for atom in info:
 		list_color_pdb.append(atom[7])
@@ -90,6 +109,26 @@ def plot_pymol_surface(info, pdb_id):
 
 
 def plot_pymol_prot_n(info, num_atom, distance, pdb_id):
+    """function to generate a pymol file.
+    This function generates a pymol file based of 
+    the PDB file of the protein with a specific 
+    coloration. In red, the atoms neighboring atoms 
+    of the selected atom (num_atom), i.e. those 
+    whose distance is less than that of the argument. 
+    And in blue the atoms who are not neighbors. 
+
+    Parameters
+    ----------
+    info : list of list,
+    num_atom : int, 
+    distance : float,
+    pdb_id : string, 
+
+    Returns
+    -------
+    No returns
+    Generate a pymol file (.pse) 
+    """
 	
 	cmd.load("pdb" + pdb_id + ".ent", "proteine")
 	list_color_pdb = []
@@ -101,11 +140,24 @@ def plot_pymol_prot_n(info, num_atom, distance, pdb_id):
 		else:
 			cmd.color("blue", f'proteine and id {id_atom + 1}')
 			
-	#cmd.show('sphere', 'proteine')
 	cmd.save(pdb_id + "_neighbors.pse", "proteine")
 	
 
 def stat_by_atom(info_pdb, pdb_id):
+    """Function to generate a .png barplot
+    of solvent accessibility by atom category. 
+    Make th sum of solvent accessibility area
+    of each atom category (C, N, O, S). 
+
+    Parameters
+    ----------
+    info_pdb : list of list,
+    pdb_id : string, 
+
+    Returns
+    -------
+    dict_atoms : a dictionary, 
+    """ 
 
     dict_atoms = {"C": 0, "N": 0, "O": 0, "S": 0}
 
@@ -131,6 +183,20 @@ def stat_by_atom(info_pdb, pdb_id):
 
 
 def stat_by_residus(info_pdb, pdb_id):
+    """Function to generate a .png barplot
+    of solvent accessibility by residu category. 
+    Make th sum of solvent accessibility area
+    of each residu (amino acide) category. 
+    
+    Parameters
+    ----------
+    info_pdb : list of list,
+    pdb_id : string, 
+    
+    Returns
+    -------
+    dict_aa : a dictionary, 
+    """ 
 
     dict_aa = {"ALA": 0, "ARG": 0, "ASN": 0, "ASP": 0,
                "CYS": 0, "GLY": 0, "HIS": 0, "ILE": 0,
