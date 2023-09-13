@@ -20,7 +20,7 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
     solvation sphere. Its radius is equal 
     to the sum of the atom's Van der Waals radius 
     and the radius of a water molecule (1.4 Ångström).
-    
+
     Parameters
     ----------
     x, y, z : int, the atom's cartesian coordinates
@@ -31,9 +31,9 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
     points: a list of list, list of cartesian coordinates of each point
     """
 
-    x = info_pdb[num_atom][3]
-    y = info_pdb[num_atom][4]
-    z = info_pdb[num_atom][5]
+    x = info_pdb[num_atom][4]
+    y = info_pdb[num_atom][5]
+    z = info_pdb[num_atom][6]
 
     r = info_pdb[num_atom][6] + RADIUS_H2O
     theta = np.random.uniform(0, np.pi, NB_POINTS)
@@ -52,11 +52,11 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
     axes.scatter(points_x, points_y, points_z)
     plt.savefig(pdb_id + "_points.png")
     plt.close()
-    
+
     points = np.array([points_x, points_y, points_z]).T
 
     return points
-    
+
 
 def plot_pymol_surface(info, pdb_id):
     """function to generate a protein pymol file.
@@ -65,46 +65,44 @@ def plot_pymol_surface(info, pdb_id):
     coloration of of each atom as a function 
     of their solvent surface area. In red, the atoms 
     most acessible and in blue the less accessible.
-    
+
     Parameters
     ----------
     info : list of list, 
     pdb_id : string, 
-    
+
     Returns
     -------
     No returns
     Generate a pymol file (.pse) 
     """
-    
+
     cmd.load("pdb" + pdb_id + ".ent", "proteine")
-    
+
     list_color_pdb = []
-    
-	for atom in info:
-		list_color_pdb.append(atom[7])
 
-	array_color_pdb = np.asarray(list_color_pdb)
+    for atom in info:
+        list_color_pdb.append(atom[8])
 
-	def colormap(valeur):
-		if valeur <= 1.0 :
-		    return 'blue'
-		elif valeur <= 5.0 :
-		    return 'green'
-		elif valeur <= 15.0 :
-		    return 'yellow'
-		elif valeur <= 30.0 :
-		    return 'orange'
-		else:
-		    return 'red'
+    array_color_pdb = np.asarray(list_color_pdb)
 
-	for idx, value in enumerate(array_color_pdb):
-		
-		color = colormap(value)
-		cmd.color(color, f'proteine and id {idx + 1}')
-	
-	cmd.show('surface', 'proteine')
-	cmd.save(pdb_id + "_surface.pse", "proteine")
+    for idx, value in enumerate(array_color_pdb):
+
+        if value <= 1.0:
+            color = "blue"
+        elif value <= 5.0 :
+            color = "green"
+        elif value <= 15.0 :
+            color = "yellow"
+        elif value <= 30.0 :
+            color = "orange"
+        else:
+            color = "red"
+
+        cmd.color(color, f'proteine and id {idx + 1}')
+
+    cmd.show('surface', 'proteine')
+    cmd.save(pdb_id + "_surface.pse", "proteine")
 
 
 
@@ -129,19 +127,19 @@ def plot_pymol_prot_n(info, num_atom, distance, pdb_id):
     No returns
     Generate a pymol file (.pse) 
     """
-	
-	cmd.load("pdb" + pdb_id + ".ent", "proteine")
-	list_color_pdb = []
-	list_atoms_neighbors = sasa.neighbors(num_atom, info, distance)
-	
-	for id_atom, atom in enumerate(info):
-		if atom in list_atoms_neighbors:
-			cmd.color("red", f'proteine and id {id_atom + 1}')
-		else:
-			cmd.color("blue", f'proteine and id {id_atom + 1}')
-			
-	cmd.save(pdb_id + "_neighbors.pse", "proteine")
-	
+
+    cmd.load("pdb" + pdb_id + ".ent", "proteine")
+    list_color_pdb = []
+    list_atoms_neighbors = sasa.neighbors(num_atom, info, distance)
+
+    for id_atom, atom in enumerate(info):
+        if atom in list_atoms_neighbors:
+            cmd.color("red", f'proteine and id {id_atom + 1}')
+        else:
+            cmd.color("blue", f'proteine and id {id_atom + 1}')
+    
+    cmd.save(pdb_id + "_neighbors.pse", "proteine")
+
 
 def stat_by_atom(info_pdb, pdb_id):
     """Function to generate a .png barplot
@@ -167,7 +165,7 @@ def stat_by_atom(info_pdb, pdb_id):
 
         if a in dict_atoms:
 
-            dict_atoms[a] = dict_atoms[a] + atom[7]
+            dict_atoms[a] = dict_atoms[a] + atom[8]
 
     list_atoms = list(dict_atoms.keys())
     list_values = list(dict_atoms.values())
@@ -182,42 +180,43 @@ def stat_by_atom(info_pdb, pdb_id):
     return dict_atoms
 
 
-def stat_by_residus(info_pdb, pdb_id):
+
+def stat_residus(info_pdb, pdb_id):
     """Function to generate a .png barplot
     of solvent accessibility by residu category. 
     Make th sum of solvent accessibility area
     of each residu (amino acide) category. 
-    
+
     Parameters
     ----------
     info_pdb : list of list,
     pdb_id : string, 
-    
+
     Returns
     -------
     dict_aa : a dictionary, 
-    """ 
-
-    dict_aa = {"ALA": 0, "ARG": 0, "ASN": 0, "ASP": 0,
-               "CYS": 0, "GLY": 0, "HIS": 0, "ILE": 0,
-               "LEU": 0, "LYS": 0, "MET": 0, "PHE": 0,
-               "PRO": 0, "SER": 0, "THR": 0, "TRP": 0,
-               "TYR": 0, "VAL": 0}
-
+    """
+    acc_by_amino_acide = {}
+    
     for atom in info_pdb:
+    
+        num_aa = atom[3]
+        acc = atom[8]
+        
+        if num_aa in acc_by_amino_acide:
+            acc_by_amino_acide[num_aa] += acc
 
-        if atom[2] in dict_aa:
-
-            dict_aa[atom[2]] = round(dict_aa[atom[2]] + atom[7], 2)
-
-    list_keys = list(dict_aa.keys())
-    list_values = list(dict_aa.values())
-
+        else:
+            acc_by_amino_acide[num_aa] = acc
+    
+    num_aa = list(acc_by_amino_acide.keys())
+    acc = list(acc_by_amino_acide.values())
+            
     fig = plt.figure()
-    plt.title("Barplot solvent accessible surface area by residue")
-    width = 0.5
-    plt.bar(list_keys, list_values, width, color='b')
-    plt.savefig(pdb_id + "_barplot_aa.png")
+    plt.title("solvent accessible surface area per residue")
+    plt.xticks(np.arange(min(num_aa), max(num_aa)+1, 10.0))
+    plt.plot(num_aa, acc, marker='o', linestyle='-')
+    plt.savefig(pdb_id + "_sasa_amino_acide.png")
     plt.close()
 
-    return dict_aa
+

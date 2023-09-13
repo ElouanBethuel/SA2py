@@ -140,4 +140,18 @@ With **400 points** by atoms to model the solvation sphere :
 We can see that the higher the number of points, the better the performance.   
 In addition, performance is much better for medium and large proteins than for small ones (3i40 for example).  
 
+### Comparison of our program results with the scientific paper 
+
+Comparaison of the solvent accessible surface area per residus with 7kh5 :    
+
+With SASA program :    
+
+![image](.readme_images/7kh5_barplot_aa.png)
+
+With data of the article   :
+
+![image](.readme_images/aa_by_residus_article.png)
+
+In the article, the solid line corresponds to solvent accessible surface area per residue, and we can see that the results are similar to those of our program. 
+
 ---

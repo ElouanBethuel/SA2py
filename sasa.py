@@ -46,8 +46,10 @@ def parse_pdb_file(path_pdb_file):
                 if splt_line[1] != "H":
 
                     new_line = [splt_line[1], splt_line[2], 
-                               splt_line[3], float(splt_line[6]),
-                               float(splt_line[7]), float(splt_line[8])]
+                                splt_line[3], float(splt_line[5]),
+                                float(splt_line[6]),
+                                float(splt_line[7]),
+                                float(splt_line[8])]
 
                     # Add Van der Waals radius
 
@@ -120,7 +122,7 @@ def all_atoms_points(info_pdb):
 
     for atom in info_pdb:
 
-        points = create_points(atom[3], atom[4], atom[5], atom[6])
+        points = create_points(atom[4], atom[5], atom[6], atom[7])
         list_all_points[atom[0]] = points
 
     return list_all_points
@@ -151,18 +153,18 @@ def neighbors(num_atom, pdb, threshold):
 
     info_pdb = copy.deepcopy(pdb)
 
-    x = info_pdb[num_atom-1][3]
-    y = info_pdb[num_atom-1][4]
-    z = info_pdb[num_atom-1][5]
+    x = info_pdb[num_atom-1][4]
+    y = info_pdb[num_atom-1][5]
+    z = info_pdb[num_atom-1][6]
 
     del (info_pdb[num_atom-1])
     list_neighbors = []
 
     for atom in info_pdb:
 
-        x_nb = atom[3]
-        y_nb = atom[4]
-        z_nb = atom[5]
+        x_nb = atom[4]
+        y_nb = atom[5]
+        z_nb = atom[6]
 
         d = np.sqrt((x - x_nb)**2 + (y - y_nb)**2 + (z - z_nb)**2)
 
@@ -235,16 +237,16 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
 
             for neighbor in neighbors:
 
-                x_n = neighbor[3]
-                y_n = neighbor[4]
-                z_n = neighbor[5]
+                x_n = neighbor[4]
+                y_n = neighbor[5]
+                z_n = neighbor[6]
 
                 point_n = np.array([x_n, y_n, z_n])
 
                 # calculates Euclidean distances between the neighboring atom and the atom's points
                 distances = np.linalg.norm(point_n - points, axis=1)
 
-                occulted = distances <= RADIUS_H2O + atom[6]
+                occulted = distances <= RADIUS_H2O + atom[7]
                 indices_occulted = np.where(occulted)[0]
                 occulted_pts[indices_occulted] = -1
 
@@ -252,7 +254,7 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
             accessible_pts = (np.size(points)/3) - np.count_nonzero(occulted_pts == -1)/3
             prct_acc_atom = ((accessible_pts / (np.size(points)/3)) * NB_POINTS)
 
-            acc_area_atom = (prct_acc_atom/NB_POINTS) * 4 * np.pi*((RADIUS_H2O + atom[6])**2)
+            acc_area_atom = (prct_acc_atom/NB_POINTS) * 4 * np.pi*((RADIUS_H2O + atom[7])**2)
             prot_acc_area = prot_acc_area + acc_area_atom
 
             filout.write(f"{atom}\n")

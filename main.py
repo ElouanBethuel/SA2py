@@ -71,10 +71,10 @@ if __name__ == "__main__":
     # Statistics
     if args.statistical: 
         sasa_stat.stat_by_atom(info, args.pdb_id)
-        sasa_stat.stat_by_residus(info, args.pdb_id)
         sasa_stat.create_points_graphic(info, 1, args.pdb_id)
         sasa_stat.plot_pymol_surface(info, args.pdb_id)
         sasa_stat.plot_pymol_prot_n(info, 1, 10, args.pdb_id)
+        sasa_stat.stat_residus(info, args.pdb_id)
 
     # Create and delete folders
     if not os.path.exists("pdb_folder"):
