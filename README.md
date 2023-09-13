@@ -8,6 +8,9 @@
  - sasa.py, with all functions to compute the SASA
  - sasa_stat.py, with all functions to build statisticals graphs or pymol files
 
+The methode use to compute the SASA is based about this article :   
+[Environment and Exposure to Solvent of Protein Atoms. Lysozyme and Insulin](https://pubmed.ncbi.nlm.nih.gov/4760134/)   
+by  A.Shrake and J A Rupley
 
 ## Setup your environnement 
 
