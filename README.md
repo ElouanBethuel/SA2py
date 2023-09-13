@@ -105,24 +105,24 @@ According to the website https://www.ebi.ac.uk/pdbe/pisa/ :  PDBePISA (Proteins,
 
 With **20 points** by atoms to model the solvation sphere : 
 
-| PDD ID | SASA         | PDBePPISA   | Similarity score |
+| PDB ID | SASA         | PDBePPISA   | percentage difference |
 |--------|--------------|-------------|------------------|
 | 3i40   |  3644.85 Å²  | 4902.6 Å²   | 34.5 %           |
 | 7kh5   |  6821.96 Å²  | 6346.1 Å²   | 6.9 %            |
 | 3wgt   |  28621.66 Å² | 31243.3 Å²  | 8.1 %            |
-| 3rt9   |  21911.93 Å² |  22296.2 Å² | 1.7 %            |
+| 3rt9   |  21911.93 Å² | 22296.2 Å²  | 1.7 %            |
 | 1us7   |  21904.68 Å² | 23019.5 Å²  | 4.8 %            |  
 
 <br>
 
 With **400 points** by atoms to model the solvation sphere :
 
-| PDD ID | SASA        | PDBePISA    | Similarity score |
+| PDB ID | SASA        | PDBePISA    | Percentage difference |
 |--------|-------------|-------------|------------------|
 | 3i40   | 3727.46 Å²  | 4902.6 Å²   | 31.5 %           |
 | 7kh5   | 6563.24 Å²  | 6346.1 Å²   | 3.3 %            |
 | 3wgt   | 29599.49 Å² | 31243.3 Å²  | 5.5 %            |
-| 3rt9   | 22202.34 Å² |  22296.2 Å² | 0.42 %           |
+| 3rt9   | 22202.34 Å² | 22296.2 Å²  | 0.42 %           |
 | 1us7   | 22182.53 Å² | 23019.5 Å²  | 3.7 %            |
 
 
