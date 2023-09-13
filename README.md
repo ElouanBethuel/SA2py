@@ -152,6 +152,9 @@ With data of the article   :
 
 ![image](.readme_images/aa_by_residus_article.png)
 
-In the article, the solid line corresponds to solvent accessible surface area per residue, and we can see that the results are similar to those of our program. 
+In the article, the solid line corresponds to solvent accessible surface area per residue, 
+and we can see that the results are similar to those of our program.
+For example, In both cases, we can see a important accessibility between residues 10 and 15
+and a import decrease of the accessibility between residues 50 and 61. 
 
 ---
