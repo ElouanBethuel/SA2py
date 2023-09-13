@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import proj3d
 
 RADIUS_H2O = 1.4
-NB_POINTS = 20
 
 
 def parse_pdb_file(path_pdb_file):
@@ -30,7 +29,8 @@ def parse_pdb_file(path_pdb_file):
     
     Returns
     -------
-    info: list of list
+    info: list of list, informations extract 
+    to the PDB file.
     """
 
     info = []
@@ -55,13 +55,10 @@ def parse_pdb_file(path_pdb_file):
 
                     if new_line[1].find("N") != -1:
                         new_line.append(1.55)
-
                     if new_line[1].find("O") != -1:
                         new_line.append(1.52)
-
                     if new_line[1].find("S") != -1:
                         new_line.append(1.8)
-
                     if new_line[1].find("C") != -1:
                         new_line.append(1.7)
 
@@ -71,7 +68,7 @@ def parse_pdb_file(path_pdb_file):
 
 
 
-def create_points(x, y, z, radius):
+def create_points(x, y, z, radius, nb_points):
     """Function to generated points around an atom.
     
     This function generates a set of points to form 
@@ -83,16 +80,19 @@ def create_points(x, y, z, radius):
     Parameters
     ----------
     x, y, z : int, the atom's cartesian coordinates
+    
     radius : float, the atom's Van der Waals radius
     
     Returns
     -------
-    points: a list of list
+    points: a list of list, 
+    a list of all Cartesian coordinates of all points 
+    around an atom 
     """
 
     r = radius + RADIUS_H2O
-    theta = np.random.uniform(0, np.pi, NB_POINTS)
-    phi = np.random.uniform(0, 2*np.pi, NB_POINTS)
+    theta = np.random.uniform(0, np.pi, nb_points)
+    phi = np.random.uniform(0, 2*np.pi, nb_points)
 
     points_x = x + r * np.sin(theta) * np.cos(phi)
     points_y = y + r * np.sin(theta) * np.sin(phi)
@@ -103,7 +103,7 @@ def create_points(x, y, z, radius):
     return points
 
 
-def all_atoms_points(info_pdb):
+def all_atoms_points(info_pdb, nb_points):
     """Functions to generate points for each atom.
 
     This function uses the 'create-points' function 
@@ -112,6 +112,7 @@ def all_atoms_points(info_pdb):
     Parameters
     ----------
     info_pdb : list of list, 
+    informations extract to the PDB file.
     
     Returns
     -------
@@ -122,7 +123,7 @@ def all_atoms_points(info_pdb):
 
     for atom in info_pdb:
 
-        points = create_points(atom[4], atom[5], atom[6], atom[7])
+        points = create_points(atom[4], atom[5], atom[6], atom[7], nb_points)
         list_all_points[atom[0]] = points
 
     return list_all_points
@@ -142,13 +143,22 @@ def neighbors(num_atom, pdb, threshold):
 
     Parameters
     ----------
-    num_atom : int,
+    num_atom : int, 
+    atom number for which neighbors are discriminated.
+       
     pdb : list of list, 
+    informations extract to the PDB file.
+    
     threshold : int, 
-
+    the threshold value below which the distance
+    between two atoms is considered small enough 
+    for them to be neighbors.
+                
     Returns
     -------
-    list_neighbors: 
+    list_neighbors: list of list, 
+    a list of the information contained 
+    in "info" for each atom's neighbors 
     """
 
     info_pdb = copy.deepcopy(pdb)
@@ -182,12 +192,18 @@ def all_neighbors(info_pdb, threshold):
 
     Parameters
     ----------
-    info_pdb : list of list, 
-    threshold : int, 
+    info_pdb : list of list,
+    informations extract to the PDB file.
+    
+    threshold : int,
+    the threshold value below which the 
+    distance between two atoms is considered 
+    small enough for them to be neighbors.
 
     Returns
     -------
     list_all_neighbors: list of list, 
+    a list of all neighbors of each atoms
     """
 
     list_all_neighbors = []
@@ -198,7 +214,7 @@ def all_neighbors(info_pdb, threshold):
     return list_all_neighbors
 
 
-def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
+def access_solvant(info_pdb, list_all_neighbors, list_all_atoms_points, pdb_id, nb_points):
     """Function to identify an atom's neighbors.
     This function identifies all neighbors 
     located at a certain distance from the atom.
@@ -210,10 +226,17 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
 
     Parameters
     ----------
-    info : list of list,
+    info_pdb : list of list,
+    informations extract to the PDB file.
+    
     list_all_neighbors : list of list, 
+    for each atom the list of all its neigbors
+    
     list_all_atoms_points : list of list, 
-    pdb_id : string, 
+    for each atom the lits of all
+    point to form the solvation sphere
+    
+    pdb_id : string, PDB file ID
     
     Returns
     -------
@@ -228,7 +251,7 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
         prot_acc_area = 0
         i = 0 
 
-        for atom in info:
+        for atom in info_pdb:
 
             points = list_all_atoms_points[atom[0]]
             occulted_pts = copy.deepcopy(points)
@@ -243,26 +266,28 @@ def access_solvant(info, list_all_neighbors, list_all_atoms_points, pdb_id):
 
                 point_n = np.array([x_n, y_n, z_n])
 
-                # calculates Euclidean distances between the neighboring atom and the atom's points
+                # Calculates Euclidean distances between the neighboring atom and the atom's points
                 distances = np.linalg.norm(point_n - points, axis=1)
-
+                
+                # Identifies indice of hidden points
                 occulted = distances <= RADIUS_H2O + atom[7]
                 indices_occulted = np.where(occulted)[0]
+                # Sets hidden points to -1 for counting
                 occulted_pts[indices_occulted] = -1
 
-            # divise par 3 car 3 coordonnées x,y,z  pour chaque sonde
+            # Need to divide the size of arrays by three because three coordinates per point
             accessible_pts = (np.size(points)/3) - np.count_nonzero(occulted_pts == -1)/3
-            prct_acc_atom = ((accessible_pts / (np.size(points)/3)) * NB_POINTS)
+            prct_acc_atom = ((accessible_pts / (np.size(points)/3)) * nb_points)
 
-            acc_area_atom = (prct_acc_atom/NB_POINTS) * 4 * np.pi*((RADIUS_H2O + atom[7])**2)
+            acc_area_atom = (prct_acc_atom/nb_points) * 4 * np.pi*((RADIUS_H2O + atom[7])**2)
             prot_acc_area = prot_acc_area + acc_area_atom
-
+            
             filout.write(f"{atom}\n")
             filout.write(f"Number of points accessible to the solvent : {accessible_pts}%\n")
             filout.write(f"Atom accessibility percentage : {round(prct_acc_atom,2)}%\n")
             filout.write(f"Solvent accessibility area of ​​the atom : {round(acc_area_atom,2)} Å²\n\n")
 
-            # add solvent accessibility area of ​​each atom to pdb info
+            # Add solvent accessibility area of ​​each atom to pdb_info
             atom.append(acc_area_atom)
 
         prot_acc_area = round(prot_acc_area, 2)

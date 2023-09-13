@@ -9,9 +9,8 @@ from mpl_toolkits.mplot3d import proj3d
 import sasa
 
 RADIUS_H2O = 1.4
-NB_POINTS = 20
 
-def create_points_graphic(info_pdb, num_atom, pdb_id):
+def create_points_graphic(info_pdb, num_atom, pdb_id, nb_points):
     """Function to generated points around an atom.
 
     This function generates a set of points 
@@ -23,26 +22,33 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
 
     Parameters
     ----------
-    x, y, z : int, the atom's cartesian coordinates
-    radius : float, the atom's Van der Waals radius
+    x, y, z : int, 
+    the atom's cartesian coordinates
+    
+    radius : float, 
+    the atom's Van der Waals radius
 
     Returns
     -------
-    points: a list of list, list of cartesian coordinates of each point
+    points: a list of list, 
+    list of cartesian coordinates of each point
     """
-
+    
+    # Extracts Cartesian coordinates
     x = info_pdb[num_atom][4]
     y = info_pdb[num_atom][5]
     z = info_pdb[num_atom][6]
-
+    
+    # creatation of new points to form the salvation sphere
     r = info_pdb[num_atom][6] + RADIUS_H2O
-    theta = np.random.uniform(0, np.pi, NB_POINTS)
-    phi = np.random.uniform(0, 2*np.pi, NB_POINTS)
+    theta = np.random.uniform(0, np.pi, nb_points)
+    phi = np.random.uniform(0, 2*np.pi, nb_points)
 
     points_x = x + r * np.sin(theta) * np.cos(phi)
     points_y = y + r * np.sin(theta) * np.sin(phi)
     points_z = z + r * np.cos(theta)
-
+    
+    # Build a figure to show that the points form a sphere around the atom
     plt.figure()
     plt.title("Viewing points on the solvation sphere")
     axes = plt.axes(projection="3d")
@@ -58,7 +64,7 @@ def create_points_graphic(info_pdb, num_atom, pdb_id):
     return points
 
 
-def plot_pymol_surface(info, pdb_id):
+def plot_pymol_surface(info_pdb, pdb_id):
     """function to generate a protein pymol file.
     This function generates a pymol file based of 
     the PDB file of the protein with a specific 
@@ -69,7 +75,10 @@ def plot_pymol_surface(info, pdb_id):
     Parameters
     ----------
     info : list of list, 
+    informations extract to the PDB file
+    
     pdb_id : string, 
+    PDB file ID
 
     Returns
     -------
@@ -81,7 +90,7 @@ def plot_pymol_surface(info, pdb_id):
 
     list_color_pdb = []
 
-    for atom in info:
+    for atom in info_pdb:
         list_color_pdb.append(atom[8])
 
     array_color_pdb = np.asarray(list_color_pdb)
@@ -118,9 +127,17 @@ def plot_pymol_prot_n(info, num_atom, distance, pdb_id):
     Parameters
     ----------
     info : list of list,
+    informations extract to the PDB file
+    
     num_atom : int, 
-    distance : float,
-    pdb_id : string, 
+    atom number for which neighbors 
+    are discriminated 
+    
+    distance : float, 
+    the minimum distance between two 
+    atoms to consider them neighbors
+    
+    pdb_id : string, PDB file ID 
 
     Returns
     -------
@@ -150,13 +167,17 @@ def stat_by_atom(info_pdb, pdb_id):
     Parameters
     ----------
     info_pdb : list of list,
+    informations extract to the PDB file
+    
     pdb_id : string, 
+    PDB file ID 
 
     Returns
     -------
-    dict_atoms : a dictionary, 
+    No returns
+    Generate a image (.png)
     """ 
-
+    
     dict_atoms = {"C": 0, "N": 0, "O": 0, "S": 0}
 
     for atom in info_pdb:
@@ -174,27 +195,30 @@ def stat_by_atom(info_pdb, pdb_id):
     plt.title("Barplot solvent accessible surface area by atoms")
     width = 0.5
     plt.bar(list_atoms, list_values, width, color='b')
-    plt.savefig(pdb_id + "_barplot_atoms.png")
+    plt.savefig(pdb_id + "_sasa_atoms.png")
     plt.close()
-
-    return dict_atoms
 
 
 
 def stat_residus(info_pdb, pdb_id):
-    """Function to generate a .png barplot
-    of solvent accessibility by residu category. 
-    Make th sum of solvent accessibility area
-    of each residu (amino acide) category. 
+    """Function to generate who use the
+    matplotlib library to create a .png
+    of solvent accessibility by residues. 
+    Give the solvent accessibility area
+    of each residu (or amino acide). 
 
     Parameters
     ----------
     info_pdb : list of list,
+    informations extract to the PDB file
+    
     pdb_id : string, 
+    PDB file ID
 
     Returns
     -------
-    dict_aa : a dictionary, 
+    No returns
+    Generate a image (.png)
     """
     acc_by_amino_acide = {}
     
@@ -216,7 +240,7 @@ def stat_residus(info_pdb, pdb_id):
     plt.title("solvent accessible surface area per residue")
     plt.xticks(np.arange(min(num_aa), max(num_aa)+1, 10.0))
     plt.plot(num_aa, acc, marker='o', linestyle='-')
-    plt.savefig(pdb_id + "_sasa_amino_acide.png")
+    plt.savefig(pdb_id + "_sasa_aa.png")
     plt.close()
 
 

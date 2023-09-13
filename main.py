@@ -64,14 +64,14 @@ if __name__ == "__main__":
     print("\n")
     print("Calculation ongoing, please wait a few seconds...\n")
     info = sasa.parse_pdb_file("pdb" + args.pdb_id + ".ent")
-    list_all_atoms_points = sasa.all_atoms_points(info)
+    list_all_atoms_points = sasa.all_atoms_points(info, args.number_points)
     list_all_neighbors = sasa.all_neighbors(info, 15)
-    sasa.access_solvant(info, list_all_neighbors, list_all_atoms_points, args.pdb_id)
+    sasa.access_solvant(info, list_all_neighbors, list_all_atoms_points, args.pdb_id, args.number_points)
 
     # Statistics
     if args.statistical: 
         sasa_stat.stat_by_atom(info, args.pdb_id)
-        sasa_stat.create_points_graphic(info, 1, args.pdb_id)
+        sasa_stat.create_points_graphic(info, 1, args.pdb_id, args.number_points)
         sasa_stat.plot_pymol_surface(info, args.pdb_id)
         sasa_stat.plot_pymol_prot_n(info, 1, 10, args.pdb_id)
         sasa_stat.stat_residus(info, args.pdb_id)
@@ -90,8 +90,8 @@ if __name__ == "__main__":
     os.rename(path + "/" + args.pdb_id + "_ouput.txt", path + "/outputs/" + args.pdb_id + "_ouput.txt")
     
     if args.statistical: 
-        os.rename(path + "/" + args.pdb_id + "_barplot_aa.png", path + "/outputs/" + args.pdb_id + "_barplot_aa.png")
-        os.rename(path + "/" + args.pdb_id + "_barplot_atoms.png", path + "/outputs/" + args.pdb_id + "_barplot_atoms.png")
+        os.rename(path + "/" + args.pdb_id + "_sasa_aa.png", path + "/outputs/" + args.pdb_id + "_barplot_aa.png")
+        os.rename(path + "/" + args.pdb_id + "_sasa_atoms.png", path + "/outputs/" + args.pdb_id + "_barplot_atoms.png")
         os.rename(path + "/" + args.pdb_id + "_points.png", path + "/outputs/" + args.pdb_id + "_points.png")
         os.rename(path + "/" + args.pdb_id + "_surface.pse", path + "/outputs/" + args.pdb_id + "_surface.pse")
         os.rename(path + "/" + args.pdb_id + "_neighbors.pse", path + "/outputs/" + args.pdb_id + "_neighbors.pse")
