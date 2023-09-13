@@ -1,5 +1,5 @@
 
-# SASA (Solvent-Accessible Surface Area)
+# SASA (Solvent Accessible Surface Area)
 
  Program to calculate the Solvent-Accessible Surface Area (SASA) of a protein.   
  Give the the area in Square Angstrom for each atom and for the protein.   
@@ -35,13 +35,18 @@ conda activate sasa_project
 <br>
 
 ## Run the program
-Execute the script   
+Run with the program :  
 ```sh
-python main.py 7kh5
+python main.py 7kh5 100
 ```
-You can replace 7kh5 by any another PDB ID.   
- This program work with many PDB files.   
- If the PDB file format is not compatible an error message is raise. 
+Execute the script main.py with the pdf file 7kh5.pdb and with 100 points to model the solvation sphere.   
+You can replace 7kh5 by any another PDB ID. This program work with many PDB files.If the PDB file format is not compatible an error message is raise.   
+
+To create also graphics and pymol files for visualisation add the argument -s
+
+```sh
+python main.py 7kh5 100 -s 
+```
 
 <br>
 
@@ -65,20 +70,26 @@ Final result :
 The solvent accessible surface area of the protein : 6503.51 Å² 
 ```
 
-### Many files are also generated : 
+### Files generated
+
+With by default arguments : 
 - The pdb file 
-- A text file with the solvent accessibility of each atom
+- A text file with the solvent accessibility of each atom   
+
+<br> 
+
+With additional arguments (-s) : 
 - A png file (graph) to visualize the points created around a atom
 - A png file (graph) showing solvent accessibility by atom category
 - A png file (graph) showing solvent accessibility by amino acid category
 - A pymol file for showing the accessibility of the protein surface
 - A pymol file for showing the neighbors selection 
 
-### This files are stored in two folders : 
+### This files are stored in two folders
 - Outputs : for stored all outputs
 - PDB :  for stored all pdb files
 
-### The file name format is always the same (exemple with the 7kh5 pdb ID):
+### The file name format is always the same (exemple with the 7kh5 pdb ID)
 - pdb file : pdb7kh5.ent (pdb + pdb_id + .ent)
 - png file : pdb_id + name_file + .png 
 - texte file : pdb_id + .txt 
