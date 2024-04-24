@@ -1,0 +1,5 @@
+site_name: SASA Documentation
+nav:
+  - Accueil: index.md
+theme:
+  name: readthedocs
