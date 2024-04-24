@@ -1,5 +1,5 @@
 
-# SA2py ( Solvent-Accessible Surface Area in Python)
+# SA2py ( Solvent-Accessible-Surface-Area in Python)
 
  Program to calculate the Solvent-Accessible Surface Area (SASA) of a protein.   
  Give the the area in Square Angstrom for each atom and for the protein.   
