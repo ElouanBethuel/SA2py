@@ -1,5 +1,5 @@
 
-# SASA (Solvent Accessible Surface Area)
+# SA2py
 
  Program to calculate the Solvent-Accessible Surface Area (SASA) of a protein.   
  Give the the area in Square Angstrom for each atom and for the protein.   
@@ -9,8 +9,7 @@
  - sasa_stat.py, with all functions to build statisticals graphs or pymol files
 
 The methode use to compute the SASA is based about this article :   
-[Environment and Exposure to Solvent of Protein Atoms. Lysozyme and Insulin](https://pubmed.ncbi.nlm.nih.gov/4760134/)   
-by  A.Shrake and J A Rupley
+[Environment and Exposure to Solvent of Protein Atoms. Lysozyme and Insulin](https://pubmed.ncbi.nlm.nih.gov/4760134/) by  A.Shrake and J A Rupley
 
 ## Setup your environnement 
 
