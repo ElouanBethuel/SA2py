@@ -1,5 +1,7 @@
 site_name: SASA Documentation
 nav:
-  - Accueil: index.md
+  - Presentation: index.md
+  - Run program: run.md
+  - Results: results.md
 theme:
   name: readthedocs
